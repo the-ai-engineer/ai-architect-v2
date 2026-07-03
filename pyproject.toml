@@ -3,11 +3,19 @@ name = "ai-architect-v2"
 version = "0.1.0"
 description = "Public code companion for the AI Architect course."
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+  "openai>=1.0.0",
+  "pydantic>=2.0.0",
+  "python-dotenv>=1.0.0",
+]
 
 [project.optional-dependencies]
-openai = ["openai>=1.0.0"]
+app = [
+  "fastapi>=0.110.0",
+  "uvicorn[standard]>=0.27.0",
+]
 adk = ["google-adk", "litellm"]
+db = ["psycopg[binary]>=3.0.0"]
 cloud = [
   "google-cloud-pubsub",
   "google-api-python-client",
@@ -18,4 +26,3 @@ cloud = [
 
 [tool.ruff]
 line-length = 100
-

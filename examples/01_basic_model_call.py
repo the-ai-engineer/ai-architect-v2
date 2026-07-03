@@ -1,27 +1,54 @@
-from __future__ import annotations
+"""
+Basic Model Calls
 
-import argparse
-import sys
-from pathlib import Path
+Call an OpenAI model with the Responses API.
+The model is just one software component in the larger support system.
+"""
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import os
 
-from support_agent.model_client import FakeModelClient, OpenAITextClient
+try:
+    from dotenv import load_dotenv
+    from openai import OpenAI
+except ImportError:
+    print("Install dependencies with `pip install -e .` to run this example.")
+    raise SystemExit(0)
 
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Lesson 01: make a basic model call.")
-    parser.add_argument(
-        "prompt",
-        nargs="?",
-        default="Explain what a customer support AI system does in one sentence.",
-    )
-    parser.add_argument("--real", action="store_true", help="Use OpenAI instead of the fake client.")
-    args = parser.parse_args()
-
-    model = OpenAITextClient() if args.real else FakeModelClient()
-    print(model.complete(args.prompt))
+load_dotenv()
 
 
-if __name__ == "__main__":
-    main()
+if not os.getenv("OPENAI_API_KEY"):
+    print("Set OPENAI_API_KEY to run this example.")
+    raise SystemExit(0)
+
+
+client = OpenAI()
+
+# =============================================================================
+# Basic Text Response
+# =============================================================================
+
+
+response = client.responses.create(
+    model="gpt-5-mini",
+    instructions="You explain AI systems in simple, practical language.",
+    input="Explain what a customer support AI agent does in one sentence.",
+)
+
+print(response.output_text)
+
+# =============================================================================
+# Domain-Specific Response
+# =============================================================================
+
+
+support_question = "Can I return an opened item?"
+
+response = client.responses.create(
+    model="gpt-5-mini",
+    instructions="Answer like a helpful customer support assistant.",
+    input=support_question,
+)
+
+print()
+print(response.output_text)
