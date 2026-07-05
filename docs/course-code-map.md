@@ -4,6 +4,7 @@ This repo has two kinds of code.
 
 First, it has small teaching samples for the early lessons.
 These are intentionally simple and runnable on a local machine.
+They should be self-contained so each lesson can be taught from one open file.
 
 Second, it will have the finished support agent.
 That app uses ADK, RAG, Gmail, Google Cloud, evals, tracing, and deployment.
@@ -158,3 +159,5 @@ The deployable app lives in `support_agent_app`.
 
 The examples stay in `examples`.
 They should stay small even when the deployable app becomes more complete.
+They should not import `support_agent_app`.
+When an example needs a small tool or document type, duplicate the tiny teaching version in the file.

@@ -1,10 +1,27 @@
+"""
+Vector RAG
+
+This shows the shape of vector search without needing an embedding API key.
+The fake embed function turns text into token counts so the example stays local.
+"""
+
 from __future__ import annotations
 
 import argparse
 import math
 from collections import Counter
+from pathlib import Path
 
-from support_agent_app.services.document_registry import load_policy_documents
+from pydantic import BaseModel
+
+
+POLICY_DIR = Path("docs/policies")
+
+
+class SupportDocument(BaseModel):
+    id: str
+    title: str
+    body: str
 
 
 def main() -> None:
@@ -24,6 +41,33 @@ def main() -> None:
     print()
     for score, document in ranked[:3]:
         print(f"{score:.3f} {document.id}: {document.title}")
+
+
+def load_policy_documents() -> list[SupportDocument]:
+    documents = []
+
+    for path in sorted(POLICY_DIR.glob("*.md")):
+        if path.name == "README.md":
+            continue
+
+        body = path.read_text(encoding="utf-8").strip()
+        documents.append(
+            SupportDocument(
+                id=path.stem,
+                title=extract_title(body, path.stem),
+                body=body,
+            )
+        )
+
+    return documents
+
+
+def extract_title(markdown: str, fallback: str) -> str:
+    for line in markdown.splitlines():
+        if line.startswith("# "):
+            return line.removeprefix("# ").strip()
+
+    return fallback
 
 
 def embed(text: str) -> Counter[str]:

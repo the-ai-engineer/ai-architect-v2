@@ -19,9 +19,6 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel
 
-from support_agent_app.services.document_registry import find_support_document, list_support_documents
-from support_agent_app.services.labels import decide_gmail_label
-
 load_dotenv()
 
 
@@ -54,6 +51,13 @@ class Email(BaseModel):
     body: str
 
 
+class PolicyDocument(BaseModel):
+    id: str
+    title: str
+    body: str
+    keywords: list[str]
+
+
 class ToolName(str, Enum):
     LIST_DOCUMENTS = "list_support_documents"
     FIND_DOCUMENT = "find_support_document"
@@ -71,6 +75,29 @@ class NextStep(BaseModel):
 class ToolResult(BaseModel):
     tool: ToolName
     content: str
+
+
+POLICY_DOCUMENTS = [
+    PolicyDocument(
+        id="refund-policy",
+        title="Refund Policy",
+        body=(
+            "Customers can return most items within 30 days of delivery. "
+            "Opened items can be returned if they are complete, undamaged, "
+            "and have only been inspected in a normal way."
+        ),
+        keywords=["refund", "return", "opened", "exchange"],
+    ),
+    PolicyDocument(
+        id="shipping-policy",
+        title="Shipping Policy",
+        body=(
+            "Standard shipping usually takes 3 to 5 business days in the UK "
+            "and 7 to 14 business days for international orders."
+        ),
+        keywords=["shipping", "delivery", "tracking", "package"],
+    ),
+]
 
 
 # =============================================================================
@@ -112,12 +139,7 @@ class Agent:
                 )
             )
 
-        return str(
-            decide_gmail_label(
-                answerable=False,
-                reason="The agent reached the max iteration limit.",
-            )
-        )
+        return "Human Needed: the agent reached the max iteration limit."
 
     def choose_next_step(self, messages: list[Message]) -> NextStep:
         response = client.responses.parse(
@@ -138,15 +160,14 @@ class Agent:
 
     def run_tool(self, step: NextStep, email: Email) -> ToolResult:
         if step.tool == ToolName.LIST_DOCUMENTS:
-            return ToolResult(tool=step.tool, content=str(list_support_documents()))
+            return ToolResult(tool=step.tool, content=list_support_documents())
 
         if step.tool == ToolName.FIND_DOCUMENT:
             query = step.query or email.body
-            return ToolResult(tool=step.tool, content=str(find_support_document(query)))
+            return ToolResult(tool=step.tool, content=find_support_document(query))
 
         if step.tool == ToolName.HUMAN_NEEDED:
-            label = decide_gmail_label(answerable=False, reason=step.reason)
-            return ToolResult(tool=step.tool, content=str(label))
+            return ToolResult(tool=step.tool, content=f"Human Needed: {step.reason}")
 
         return ToolResult(tool=step.tool, content=step.answer or "")
 
@@ -155,6 +176,20 @@ class Agent:
 
     def format_email(self, email: Email) -> str:
         return f"From: {email.sender}\nSubject: {email.subject}\n\n{email.body}"
+
+
+def list_support_documents() -> str:
+    return "\n".join(f"- {document.id}: {document.title}" for document in POLICY_DOCUMENTS)
+
+
+def find_support_document(query: str) -> str:
+    normalized_query = query.lower()
+
+    for document in POLICY_DOCUMENTS:
+        if any(keyword in normalized_query for keyword in document.keywords):
+            return f"{document.title}\n{document.body}"
+
+    return "No matching support document was found."
 
 
 email = Email(

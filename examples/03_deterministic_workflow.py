@@ -12,9 +12,6 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel
 
-from support_agent_app.services.document_registry import find_support_document
-from support_agent_app.services.labels import decide_gmail_label
-
 load_dotenv()
 
 
@@ -46,6 +43,51 @@ class Classification(BaseModel):
     reason: str
 
 
+class PolicyDocument(BaseModel):
+    id: str
+    title: str
+    body: str
+    keywords: list[str]
+
+
+class LabelDecision(BaseModel):
+    label: str
+    reason: str
+
+
+# =============================================================================
+# Local Data
+# =============================================================================
+
+
+POLICY_DOCUMENTS = [
+    PolicyDocument(
+        id="refund-policy",
+        title="Refund Policy",
+        body=(
+            "Customers can return most items within 30 days of delivery. "
+            "Opened items can be returned if they are complete, undamaged, "
+            "and have only been inspected in a normal way."
+        ),
+        keywords=["refund", "return", "opened", "exchange"],
+    ),
+    PolicyDocument(
+        id="shipping-policy",
+        title="Shipping Policy",
+        body=(
+            "Standard shipping usually takes 3 to 5 business days in the UK "
+            "and 7 to 14 business days for international orders."
+        ),
+        keywords=["shipping", "delivery", "tracking", "package"],
+    ),
+]
+
+
+# =============================================================================
+# Workflow Steps
+# =============================================================================
+
+
 def classify(email: Email) -> Classification:
     response = client.responses.parse(
         model="gpt-5.5",
@@ -56,13 +98,30 @@ def classify(email: Email) -> Classification:
     return response.output_parsed
 
 
-def draft_reply(email: Email, policy: str) -> str:
+def find_policy_document(email: Email) -> PolicyDocument | None:
+    query = f"{email.subject} {email.body}".lower()
+
+    for document in POLICY_DOCUMENTS:
+        if any(keyword in query for keyword in document.keywords):
+            return document
+
+    return None
+
+
+def draft_reply(email: Email, document: PolicyDocument) -> str:
     response = client.responses.create(
         model="gpt-5.5",
         instructions="Answer the customer using only the support policy document.",
-        input=f"Customer email:\n{email.body}\n\nPolicy document:\n{policy}",
+        input=f"Customer email:\n{email.body}\n\nPolicy document:\n{document.body}",
     )
     return response.output_text
+
+
+def decide_label(answerable: bool, reason: str) -> LabelDecision:
+    if answerable:
+        return LabelDecision(label="AI Answered", reason=reason)
+
+    return LabelDecision(label="Human Needed", reason=reason)
 
 
 # =============================================================================
@@ -79,18 +138,17 @@ email = Email(
 classification = classify(email)
 
 if classification.action == Action.HUMAN_NEEDED:
-    print(decide_gmail_label(answerable=False, reason=classification.reason))
+    print(decide_label(answerable=False, reason=classification.reason))
     raise SystemExit(0)
 
-document_result = find_support_document(email.body)
+document = find_policy_document(email)
 
-if not document_result["found"]:
-    print(decide_gmail_label(answerable=False, reason=str(document_result["reason"])))
+if document is None:
+    print(decide_label(answerable=False, reason="No matching policy document was found."))
     raise SystemExit(0)
 
-document = document_result["document"]
-reply = draft_reply(email, str(document["body"]))
+reply = draft_reply(email, document)
 
 print(reply)
 print()
-print(decide_gmail_label(answerable=True, reason=f"Answered from {document['id']}"))
+print(decide_label(answerable=True, reason=f"Answered from {document.id}"))

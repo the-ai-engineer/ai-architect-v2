@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 import unittest
 
 from support_agent.agent_by_hand import run_agent_by_hand
@@ -16,6 +17,13 @@ from support_agent_app.services.support_processor import process_support_email
 
 
 class LessonExamplesTest(unittest.TestCase):
+    def test_standalone_examples_do_not_import_app_modules(self) -> None:
+        for path in sorted(Path("examples").glob("*.py")):
+            source = path.read_text(encoding="utf-8")
+
+            self.assertNotIn("from support_agent", source, msg=str(path))
+            self.assertNotIn("import support_agent", source, msg=str(path))
+
     def test_structured_output_classifies_refund_question(self) -> None:
         raw = FakeModelClient().classify_ticket("Can I get a refund?")
         classification = Classification.from_dict(raw)
