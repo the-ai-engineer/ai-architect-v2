@@ -2,11 +2,7 @@ from __future__ import annotations
 
 import argparse
 import math
-import sys
 from collections import Counter
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from support_agent_app.services.document_registry import SupportDocument, load_policy_documents
 
@@ -59,4 +55,3 @@ def cosine_similarity(left: Counter[str], right: Counter[str]) -> float:
 
 if __name__ == "__main__":
     main()
-

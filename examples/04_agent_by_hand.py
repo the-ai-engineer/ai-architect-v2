@@ -13,15 +13,11 @@ The loop is:
 """
 
 import os
-import sys
 from enum import Enum
-from pathlib import Path
 
 from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from support_agent_app.services.document_registry import find_support_document, list_support_documents
 from support_agent_app.services.labels import decide_gmail_label

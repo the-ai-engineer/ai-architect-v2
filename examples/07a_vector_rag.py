@@ -2,11 +2,7 @@ from __future__ import annotations
 
 import argparse
 import math
-import sys
 from collections import Counter
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from support_agent_app.services.document_registry import load_policy_documents
 

@@ -1,10 +1,5 @@
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
 from support_agent_app.config import AppConfig
 from support_agent_app.services.policy_ingestion import UPSERT_DOCUMENT_SQL, load_documents_for_ingest
 
@@ -25,4 +20,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
