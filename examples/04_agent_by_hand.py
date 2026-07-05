@@ -17,13 +17,9 @@ import sys
 from enum import Enum
 from pathlib import Path
 
-try:
-    from dotenv import load_dotenv
-    from openai import OpenAI
-    from pydantic import BaseModel
-except ImportError:
-    print("Install dependencies with `pip install -e .` to run this example.")
-    raise SystemExit(0)
+from dotenv import load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 

@@ -26,13 +26,8 @@ Rules:
 
 def build_support_agent(config: AppConfig | None = None) -> Any:
     """Build the ADK support agent."""
-    try:
-        from google.adk import Agent
-        from google.adk.models.lite_llm import LiteLlm
-    except ImportError as exc:
-        raise RuntimeError(
-            "Install ADK dependencies with `pip install -e '.[adk]'` before running this sample."
-        ) from exc
+    from google.adk import Agent
+    from google.adk.models.lite_llm import LiteLlm
 
     config = config or AppConfig.from_env()
     return Agent(

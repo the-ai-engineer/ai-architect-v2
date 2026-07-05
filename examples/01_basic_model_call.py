@@ -7,12 +7,8 @@ The model is just one software component in the larger support system.
 
 import os
 
-try:
-    from dotenv import load_dotenv
-    from openai import OpenAI
-except ImportError:
-    print("Install dependencies with `pip install -e .` to run this example.")
-    raise SystemExit(0)
+from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 

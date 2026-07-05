@@ -8,13 +8,9 @@ Structured outputs turn model responses into typed data your application can tru
 import os
 from enum import Enum
 
-try:
-    from dotenv import load_dotenv
-    from openai import OpenAI
-    from pydantic import BaseModel
-except ImportError:
-    print("Install dependencies with `pip install -e .` to run this example.")
-    raise SystemExit(0)
+from dotenv import load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel
 
 load_dotenv()
 

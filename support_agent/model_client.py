@@ -49,12 +49,7 @@ class OpenAITextClient:
         self.model = model
 
     def complete(self, prompt: str) -> str:
-        try:
-            from openai import OpenAI
-        except ImportError as exc:
-            raise RuntimeError(
-                "Install dependencies with `pip install -e .`."
-            ) from exc
+        from openai import OpenAI
 
         client = OpenAI()
         response = client.responses.create(

@@ -32,10 +32,7 @@ def load_documents_for_ingest(policy_dir: Path) -> list[SupportDocument]:
 
 
 def ingest_documents(database_url: str, documents: list[SupportDocument]) -> None:
-    try:
-        import psycopg
-    except ImportError as exc:
-        raise RuntimeError("Install Postgres dependencies with `pip install -e '.[db]'`.") from exc
+    import psycopg
 
     with psycopg.connect(database_url) as conn:
         with conn.cursor() as cur:
@@ -51,4 +48,3 @@ def ingest_documents(database_url: str, documents: list[SupportDocument]) -> Non
                         list(doc.keywords),
                     ),
                 )
-
