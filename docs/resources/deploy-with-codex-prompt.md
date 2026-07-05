@@ -35,20 +35,21 @@ Constraints:
 
 Tasks:
 1. Inspect the repo and identify the app entrypoint, Dockerfile, config, and required environment variables.
-2. Check whether `gcloud` is installed and authenticated.
-3. Ask me which Google Cloud project and region to use.
-4. Enable required APIs.
-5. Create or confirm required service accounts.
-6. Create required secrets.
-7. Create or connect Cloud SQL Postgres.
-8. Run policy ingestion.
-9. Deploy the Cloud Run service.
-10. Verify `/health`.
-11. Configure Gmail API access.
-12. Configure Pub/Sub notification flow.
-13. Send or simulate a test email.
-14. Check logs and confirm the system processed the message.
-15. Produce a short deployment report with resource names, URLs, secrets used, and remaining manual steps.
+2. Check whether `uv` is installed and run `uv sync`.
+3. Check whether `gcloud` is installed and authenticated.
+4. Ask me which Google Cloud project and region to use.
+5. Enable required APIs.
+6. Create or confirm required service accounts.
+7. Create required secrets.
+8. Create or connect Cloud SQL Postgres.
+9. Run policy ingestion with `uv run --extra db`.
+10. Deploy the Cloud Run service.
+11. Verify `/health`.
+12. Configure Gmail API access.
+13. Configure Pub/Sub notification flow.
+14. Send or simulate a test email.
+15. Check logs and confirm the system processed the message.
+16. Produce a short deployment report with resource names, URLs, secrets used, and remaining manual steps.
 
 Output:
 Work step by step.

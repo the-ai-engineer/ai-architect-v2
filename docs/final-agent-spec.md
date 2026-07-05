@@ -250,8 +250,8 @@ The editable source documents live in `docs/policies`.
 Students can update the markdown files, then run:
 
 ```bash
-python3 -m support_agent_app.ingest_policies --dry-run
-DATABASE_URL="postgresql://..." python3 -m support_agent_app.ingest_policies
+uv run python -m support_agent_app.ingest_policies --dry-run
+DATABASE_URL="postgresql://..." uv run --extra db python -m support_agent_app.ingest_policies
 ```
 
 Vector search is still useful to understand, and the course teaches it.

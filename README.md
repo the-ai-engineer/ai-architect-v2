@@ -30,29 +30,30 @@ Read the finished application spec:
 Run the first examples:
 
 ```bash
-python3 examples/01_basic_model_call.py
-python3 examples/02_structured_outputs.py
-python3 examples/03_deterministic_workflow.py
-python3 examples/04_agent_by_hand.py
-python3 examples/05_first_adk_agent.py
-python3 examples/06a_file_rag.py
-python3 examples/06b_sql_rag.py
-python3 examples/07a_vector_rag.py
-python3 examples/07b_hybrid_rag.py
+uv sync
+uv run python examples/01_basic_model_call.py
+uv run python examples/02_structured_outputs.py
+uv run python examples/03_deterministic_workflow.py
+uv run python examples/04_agent_by_hand.py
+uv run python examples/05_first_adk_agent.py
+uv run python examples/06a_file_rag.py
+uv run python examples/06b_sql_rag.py
+uv run python examples/07a_vector_rag.py
+uv run python examples/07b_hybrid_rag.py
 ```
 
 Load the sample support policies:
 
 ```bash
-python3 -m support_agent_app.ingest_policies --dry-run
-DATABASE_URL="postgresql://..." python3 -m support_agent_app.ingest_policies
+uv run python -m support_agent_app.ingest_policies --dry-run
+DATABASE_URL="postgresql://..." uv run --extra db python -m support_agent_app.ingest_policies
 ```
 
-Run the deployable app locally after installing the app dependencies:
+Run the deployable app locally:
 
 ```bash
-pip install -e '.[app]'
-uvicorn support_agent_app.api:app --reload --port 8080
+uv sync --extra app
+uv run --extra app uvicorn support_agent_app.api:app --reload --port 8080
 ```
 
 Build the Cloud Run container:
@@ -64,12 +65,13 @@ docker build -t ai-architect-support-agent .
 Run tests:
 
 ```bash
-python3 -m unittest discover -s tests
+uv run python -m unittest discover -s tests
 ```
 
 ## Teaching Stack
 
 - Python for the examples.
+- `uv` for package management and running commands.
 - The ideas translate to other languages.
 - OpenAI `gpt-5.5` as the default model provider.
 - Google ADK 2.x for the agent framework once students understand the agent loop.

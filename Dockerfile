@@ -1,17 +1,22 @@
 FROM python:3.12-slim
 
+COPY --from=ghcr.io/astral-sh/uv:0.9.22 /uv /uvx /bin/
+
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
 
 WORKDIR /app
 
-COPY pyproject.toml README.md ./
+COPY pyproject.toml uv.lock README.md ./
 COPY support_agent ./support_agent
 COPY support_agent_app ./support_agent_app
 COPY docs ./docs
 COPY sql ./sql
 
-RUN pip install --no-cache-dir ".[app]"
+RUN uv sync --locked --no-dev --extra app
+
+ENV PATH="/app/.venv/bin:$PATH"
 
 CMD ["uvicorn", "support_agent_app.api:app", "--host", "0.0.0.0", "--port", "8080"]
-

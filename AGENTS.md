@@ -45,16 +45,16 @@ Use ADK after the hand-built agent lesson.
 Run this before reporting code changes:
 
 ```bash
-python3 -m unittest discover -s tests
-python3 examples/01_basic_model_call.py
-python3 examples/02_structured_outputs.py
-python3 examples/03_deterministic_workflow.py
-python3 examples/04_agent_by_hand.py
-python3 examples/05_first_adk_agent.py
-python3 examples/06a_file_rag.py
-python3 examples/06b_sql_rag.py
-python3 examples/07a_vector_rag.py
-python3 examples/07b_hybrid_rag.py
-python3 -m support_agent_app.ingest_policies --dry-run
-python3 -m support_agent_app.main
+uv run python -m unittest discover -s tests
+uv run python examples/01_basic_model_call.py
+uv run python examples/02_structured_outputs.py
+uv run python examples/03_deterministic_workflow.py
+uv run python examples/04_agent_by_hand.py
+uv run python examples/05_first_adk_agent.py
+uv run python examples/06a_file_rag.py
+uv run python examples/06b_sql_rag.py
+uv run python examples/07a_vector_rag.py
+uv run python examples/07b_hybrid_rag.py
+uv run python -m support_agent_app.ingest_policies --dry-run
+uv run python -m support_agent_app.main
 ```
