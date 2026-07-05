@@ -52,6 +52,12 @@ class Message(BaseModel):
     content: str
 
 
+class Email(BaseModel):
+    sender: str
+    subject: str
+    body: str
+
+
 class ToolName(str, Enum):
     LIST_DOCUMENTS = "list_support_documents"
     FIND_DOCUMENT = "find_support_document"
@@ -81,8 +87,8 @@ class Agent:
         self.model = model
         self.max_iterations = max_iterations
 
-    def run(self, question: str) -> str:
-        messages = [Message(role=MessageRole.USER, content=question)]
+    def run(self, email: Email) -> str:
+        messages = [Message(role=MessageRole.USER, content=self.format_email(email))]
 
         for iteration in range(self.max_iterations):
             step = self.choose_next_step(messages)
@@ -93,10 +99,10 @@ class Agent:
                 return step.answer or "I do not have enough information to answer."
 
             if step.tool == ToolName.HUMAN_NEEDED:
-                result = self.run_tool(step, question)
+                result = self.run_tool(step, email)
                 return result.content
 
-            result = self.run_tool(step, question)
+            result = self.run_tool(step, email)
             messages.append(
                 Message(
                     role=MessageRole.ASSISTANT,
@@ -134,12 +140,12 @@ class Agent:
         )
         return response.output_parsed
 
-    def run_tool(self, step: NextStep, question: str) -> ToolResult:
+    def run_tool(self, step: NextStep, email: Email) -> ToolResult:
         if step.tool == ToolName.LIST_DOCUMENTS:
             return ToolResult(tool=step.tool, content=str(list_support_documents()))
 
         if step.tool == ToolName.FIND_DOCUMENT:
-            query = step.query or question
+            query = step.query or email.body
             return ToolResult(tool=step.tool, content=str(find_support_document(query)))
 
         if step.tool == ToolName.HUMAN_NEEDED:
@@ -151,9 +157,16 @@ class Agent:
     def format_messages(self, messages: list[Message]) -> str:
         return "\n\n".join(f"{message.role.value.upper()}:\n{message.content}" for message in messages)
 
+    def format_email(self, email: Email) -> str:
+        return f"From: {email.sender}\nSubject: {email.subject}\n\n{email.body}"
 
-question = "Can I return a backpack if I opened the box but have not used it?"
-answer = Agent().run(question)
+
+email = Email(
+    sender="customer@example.com",
+    subject="Return question",
+    body="Can I return a backpack if I opened the box but have not used it?",
+)
+answer = Agent().run(email)
 
 print("\nFinal:")
 print(answer)

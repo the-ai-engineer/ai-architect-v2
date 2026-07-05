@@ -27,6 +27,12 @@ client = OpenAI()
 # =============================================================================
 
 
+class Email(BaseModel):
+    sender: str
+    subject: str
+    body: str
+
+
 class Category(str, Enum):
     REFUND = "refund"
     SHIPPING = "shipping"
@@ -40,23 +46,31 @@ class Action(str, Enum):
     HUMAN_NEEDED = "human_needed"
 
 
-class SupportClassification(BaseModel):
+class Classification(BaseModel):
     category: Category
     action: Action
     confidence: float
     reason: str
 
 
-email_text = "Hi, can I return a backpack if I opened the box but have not used it?"
+def classify(email: Email) -> Classification:
+    response = client.responses.parse(
+        model="gpt-5.5",
+        instructions="Classify the customer support email.",
+        input=f"Subject: {email.subject}\n\n{email.body}",
+        text_format=Classification,
+    )
+    return response.output_parsed
 
-response = client.responses.parse(
-    model="gpt-5.5",
-    instructions="Classify the customer support email.",
-    input=email_text,
-    text_format=SupportClassification,
+
+email = Email(
+    sender="customer@example.com",
+    subject="Return question",
+    body="Hi, can I return a backpack if I opened the box but have not used it?",
 )
 
-classification = response.output_parsed
+classification = classify(email)
+
 print(classification)
 
 # =============================================================================
@@ -70,15 +84,22 @@ class CustomerRequest(BaseModel):
     needs_private_data: bool
 
 
-email_text = "Can you tell me whether order NS-1029 has shipped yet?"
+def extract_request(email: Email) -> CustomerRequest:
+    response = client.responses.parse(
+        model="gpt-5.5",
+        instructions="Extract the customer request from the email.",
+        input=f"Subject: {email.subject}\n\n{email.body}",
+        text_format=CustomerRequest,
+    )
+    return response.output_parsed
 
-response = client.responses.parse(
-    model="gpt-5.5",
-    instructions="Extract the customer request from the email.",
-    input=email_text,
-    text_format=CustomerRequest,
+
+email = Email(
+    sender="customer@example.com",
+    subject="Shipping update",
+    body="Can you tell me whether order NS-1029 has shipped yet?",
 )
 
-request = response.output_parsed
+request = extract_request(email)
 print()
 print(request)
