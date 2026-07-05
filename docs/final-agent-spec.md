@@ -124,6 +124,10 @@ Gmail publishes mailbox changes to Pub/Sub, Pub/Sub calls the Cloud Run service,
 The main deployed app should be a Cloud Run service.
 Cloud Run jobs are useful for policy ingestion, maintenance tasks, or scheduled polling, but they are not the main API surface for the support agent.
 
+The course should include a deployment prompt for Codex.
+Students can use Codex to help configure Google Cloud, but the course should still teach the architecture and verification steps.
+The reusable prompt lives in `docs/resources/deploy-with-codex-prompt.md`.
+
 ## Technology Choices
 
 Use OpenAI as the default model provider.

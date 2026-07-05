@@ -25,6 +25,7 @@ Read the finished application spec:
 - [docs/course-outline.md](/Users/owainlewis/Code/github/ai-engineer/ai-architect-v2/docs/course-outline.md)
 - [docs/final-agent-spec.md](/Users/owainlewis/Code/github/ai-engineer/ai-architect-v2/docs/final-agent-spec.md)
 - [docs/course-code-map.md](/Users/owainlewis/Code/github/ai-engineer/ai-architect-v2/docs/course-code-map.md)
+- [docs/resources/deploy-with-codex-prompt.md](/Users/owainlewis/Code/github/ai-engineer/ai-architect-v2/docs/resources/deploy-with-codex-prompt.md)
 
 Run the first examples:
 
@@ -88,6 +89,7 @@ python3 -m unittest discover -s tests
 - `support_agent_app/agents/`: ADK agent definitions.
 - `support_agent_app/integrations/`: external system boundaries.
 - `docs/policies/`: editable support policy documents.
+- `docs/resources/`: reusable course prompts and support material.
 - `sql/`: Postgres schema.
 
 ## Repo Status

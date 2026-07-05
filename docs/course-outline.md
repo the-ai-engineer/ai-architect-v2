@@ -128,7 +128,7 @@ The course can show polling as the stepping stone, then move to event-based proc
 | 09 | Human Escalation and Guardrails | Keep the agent on topic, avoid sensitive answers, and label threads as `AI Answered` or `Human Needed` | Future guardrails sample |
 | 10 | Evals | Build a spreadsheet-style eval set, run sample emails through the system, and review pass/fail results | Future eval suite |
 | 11 | Tracing, Logs, and Cost | Inspect model calls, tool calls, latency, failures, and spend | Future observability sample |
-| 12 | Deployment | Deploy the finished support agent to Google Cloud | Future deployment guide |
+| 12 | Deployment | Deploy the finished support agent to Google Cloud and use Codex to help configure the cloud resources | `docs/resources/deploy-with-codex-prompt.md` |
 
 ## Course Progression
 
@@ -172,6 +172,12 @@ local examples
 
 The main deployed app is a Cloud Run service because it receives HTTP requests from Pub/Sub and exposes health or admin endpoints.
 Batch jobs are useful for ingestion, maintenance, and scheduled polling, but they are not the main support agent surface.
+
+The deployment lesson should also teach how to use Codex as a deployment partner.
+Students should understand the architecture first, then use the prompt in `docs/resources/deploy-with-codex-prompt.md` to help configure Google Cloud step by step.
+
+The point is not to memorise every `gcloud` command.
+The point is to understand enough of the system to supervise Codex, catch mistakes, and verify that the deployed app actually works.
 
 ## Retrieval Progression
 

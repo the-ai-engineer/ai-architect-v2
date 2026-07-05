@@ -29,7 +29,7 @@ The examples use Python because it keeps the teaching code small and readable.
 | 09 Human escalation and guardrails | Future guardrails module | Label safe replies as `AI Answered` and risky messages as `Human Needed` |
 | 10 Evals | Future eval suite | Run sample support emails through the workflow and review spreadsheet-style pass/fail results |
 | 11 Tracing, logs, and cost | Future observability module | Inspect model calls, tool calls, traces, latency, and spend |
-| 12 Deployment | Future deployment guide | Deploy the finished system to Google Cloud |
+| 12 Deployment | `docs/resources/deploy-with-codex-prompt.md` | Deploy the finished system to Google Cloud with Codex as an implementation partner |
 
 ## Teaching Rule
 
@@ -74,6 +74,10 @@ This avoids constant polling and matches how production event systems are usuall
 
 The main support agent should be a Cloud Run service.
 Use a Cloud Run job or local CLI for one-off work such as policy ingestion.
+
+The deployment resource is `docs/resources/deploy-with-codex-prompt.md`.
+Students should use it after they understand the target architecture.
+This reinforces the course position: AI tools can help with setup, but the engineer still owns the architecture, verification, and debugging.
 
 ## Why Not Just n8n or Codex Automations
 

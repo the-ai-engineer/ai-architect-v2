@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from enum import Enum
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class TicketCategory(str, Enum):
@@ -16,53 +17,53 @@ class TicketAction(str, Enum):
     HUMAN_REVIEW = "human_review"
 
 
-@dataclass(frozen=True)
-class Ticket:
+class CourseModel(BaseModel):
+    """Base model for small teaching data types."""
+
+    model_config = ConfigDict(frozen=True)
+
+
+class Ticket(CourseModel):
     sender: str
     subject: str
     body: str
 
 
-@dataclass(frozen=True)
-class Classification:
+class Classification(CourseModel):
     category: TicketCategory
     action: TicketAction
     confidence: float
     reason: str
 
+    @field_validator("confidence")
+    @classmethod
+    def confidence_must_be_probability(cls, value: float) -> float:
+        if not 0 <= value <= 1:
+            raise ValueError("confidence must be between 0 and 1")
+        return value
+
     @classmethod
     def from_dict(cls, data: dict[str, object]) -> "Classification":
-        category = TicketCategory(str(data["category"]))
-        action = TicketAction(str(data["action"]))
-        confidence = float(data["confidence"])
-        reason = str(data["reason"])
-
-        if not 0 <= confidence <= 1:
-            raise ValueError("confidence must be between 0 and 1")
-
         return cls(
-            category=category,
-            action=action,
-            confidence=confidence,
-            reason=reason,
+            category=TicketCategory(str(data["category"])),
+            action=TicketAction(str(data["action"])),
+            confidence=float(data["confidence"]),
+            reason=str(data["reason"]),
         )
 
 
-@dataclass(frozen=True)
-class SupportDoc:
+class SupportDoc(CourseModel):
     doc_id: str
     title: str
     body: str
 
 
-@dataclass(frozen=True)
-class DraftReply:
+class DraftReply(CourseModel):
     body: str
     citations: list[str]
 
 
-@dataclass(frozen=True)
-class WorkflowResult:
+class WorkflowResult(CourseModel):
     classification: Classification
     docs: list[SupportDoc]
     draft: DraftReply | None
@@ -70,22 +71,18 @@ class WorkflowResult:
     reason: str
 
 
-@dataclass(frozen=True)
-class ToolCall:
+class ToolCall(CourseModel):
     name: str
-    arguments: dict[str, str] = field(default_factory=dict)
+    arguments: dict[str, str] = Field(default_factory=dict)
 
 
-@dataclass(frozen=True)
-class AgentStep:
+class AgentStep(CourseModel):
     thought: str
     tool_call: ToolCall | None
     observation: str | None = None
 
 
-@dataclass(frozen=True)
-class AgentResult:
+class AgentResult(CourseModel):
     final_answer: str
     steps: list[AgentStep]
     escalated: bool
-
