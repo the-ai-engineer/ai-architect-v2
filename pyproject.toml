@@ -4,18 +4,18 @@ version = "0.1.0"
 description = "Public code companion for the AI Architect course."
 requires-python = ">=3.11"
 dependencies = [
-  "openai>=1.0.0",
-  "pydantic>=2.0.0",
-  "python-dotenv>=1.0.0",
+  "openai>=2.44.0",
+  "pydantic>=2.13.4",
+  "python-dotenv>=1.2.2",
 ]
 
 [project.optional-dependencies]
 app = [
-  "fastapi>=0.110.0",
-  "uvicorn[standard]>=0.27.0",
+  "fastapi>=0.139.0",
+  "uvicorn[standard]>=0.49.0",
 ]
-adk = ["google-adk", "litellm"]
-db = ["psycopg[binary]>=3.0.0"]
+adk = ["google-adk>=2.3.0", "litellm>=1.90.2"]
+db = ["psycopg[binary]>=3.3.4"]
 cloud = [
   "google-cloud-pubsub",
   "google-api-python-client",

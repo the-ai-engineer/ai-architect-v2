@@ -27,7 +27,7 @@ Rules:
 def build_support_agent(config: AppConfig | None = None) -> Any:
     """Build the ADK support agent."""
     try:
-        from google.adk.agents import LlmAgent
+        from google.adk import Agent
         from google.adk.models.lite_llm import LiteLlm
     except ImportError as exc:
         raise RuntimeError(
@@ -35,7 +35,7 @@ def build_support_agent(config: AppConfig | None = None) -> Any:
         ) from exc
 
     config = config or AppConfig.from_env()
-    return LlmAgent(
+    return Agent(
         name="support_agent",
         model=LiteLlm(model=config.model_name),
         description="Answers safe customer support questions from a Postgres-backed document registry.",
@@ -49,4 +49,3 @@ def build_support_agent(config: AppConfig | None = None) -> Any:
 
 
 root_agent = build_support_agent()
-

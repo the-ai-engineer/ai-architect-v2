@@ -30,7 +30,7 @@ client = OpenAI()
 
 
 response = client.responses.create(
-    model="gpt-5-mini",
+    model="gpt-5.5",
     instructions="You explain AI systems in simple, practical language.",
     input="Explain what a customer support AI agent does in one sentence.",
 )
@@ -45,7 +45,7 @@ print(response.output_text)
 support_question = "Can I return an opened item?"
 
 response = client.responses.create(
-    model="gpt-5-mini",
+    model="gpt-5.5",
     instructions="Answer like a helpful customer support assistant.",
     input=support_question,
 )

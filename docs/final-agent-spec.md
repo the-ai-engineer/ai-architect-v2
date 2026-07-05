@@ -14,6 +14,30 @@ If the AI cannot answer safely, the email gets a `Human Needed` Gmail label and 
 The course uses email because it makes the demo real.
 The same backend shape could sit behind Zendesk, Intercom, HelpScout, Slack, a chat widget, or a custom ticketing UI.
 
+This could be built as a naive automation with n8n, Zapier, Codex automations, Claude integrations, or a few scripts.
+That is a valid prototype path.
+
+The final app is custom code because the course is teaching how to build a system you can operate:
+
+- clear service boundaries
+- custom business logic
+- guardrails
+- human escalation
+- tests
+- evals
+- retries
+- logs
+- traces
+- cost tracking
+- deployment control
+
+The course positioning should be:
+
+```text
+Automation tools are good for quick prototypes.
+Custom code is better for business-critical AI systems.
+```
+
 ## Why Customer Support
 
 Customer support is one of the clearest domains for applied AI systems.
@@ -84,10 +108,27 @@ Gmail support inbox
   -> logs, traces, evals, and metrics
 ```
 
+The course should teach the async progression in stages:
+
+```text
+local fake email workflow
+-> Gmail polling
+-> Gmail Pub/Sub events
+-> Cloud Run service
+```
+
+Polling is useful for local development and first demos.
+Event-based processing is the final production shape.
+Gmail publishes mailbox changes to Pub/Sub, Pub/Sub calls the Cloud Run service, and the app fetches the changed email state from Gmail.
+
+The main deployed app should be a Cloud Run service.
+Cloud Run jobs are useful for policy ingestion, maintenance tasks, or scheduled polling, but they are not the main API surface for the support agent.
+
 ## Technology Choices
 
 Use OpenAI as the default model provider.
 It is the cleanest teaching path for model calls, structured outputs, embeddings, answer generation, and evals.
+The default OpenAI model is `gpt-5.5`.
 
 Use Google Cloud as the default deployment target.
 It is the best fit for Gmail, Pub/Sub, Cloud Run, Cloud SQL, Cloud Trace, Cloud Logging, and Cloud Monitoring.
@@ -95,6 +136,7 @@ It is the best fit for Gmail, Pub/Sub, Cloud Run, Cloud SQL, Cloud Trace, Cloud 
 Use ADK from lesson 5 onward.
 Students first build an agent by hand so they understand the loop.
 Then ADK becomes the production framework for the rest of the course.
+The app uses ADK 2.x style `Agent` definitions and LiteLLM for provider switching.
 
 ## Core Components
 
@@ -213,6 +255,45 @@ It is not the default path for the finished support assistant because this domai
 
 Use normal relational tables for state.
 Use events for audit and debugging.
+
+## Evals
+
+The first eval system should be spreadsheet-shaped.
+
+Use sample email rows with expected outcomes:
+
+```text
+id
+email_subject
+email_body
+expected_category
+expected_label
+expected_document_id
+expected_should_reply
+expected_key_points
+```
+
+The eval runner should pass each email through the support processor and write actual outcomes:
+
+```text
+actual_category
+actual_label
+actual_document_id
+actual_reply
+classification_pass
+retrieval_pass
+answer_pass
+overall_pass
+notes
+```
+
+The system can automatically check labels, selected documents, reply presence, and simple required phrases.
+Humans should manually review answer quality, groundedness, tone, and whether they would send the reply to a customer.
+
+This keeps evals concrete.
+Students can see the test cases, run the workflow, and inspect the failures.
+
+LLM-as-judge can be introduced later as an extension, but the course should start with explicit sample data and manual review.
 
 ## Observability
 

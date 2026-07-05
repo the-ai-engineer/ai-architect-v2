@@ -70,8 +70,8 @@ python3 -m unittest discover -s tests
 
 - Python for the examples.
 - The ideas translate to other languages.
-- OpenAI as the default model provider.
-- Google ADK for the agent framework once students understand the agent loop.
+- OpenAI `gpt-5.5` as the default model provider.
+- Google ADK 2.x for the agent framework once students understand the agent loop.
 - Gmail and Pub/Sub for asynchronous email ingestion.
 - Cloud Run for deployment.
 - Cloud SQL Postgres for state and support documents.

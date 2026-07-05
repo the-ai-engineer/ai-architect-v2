@@ -27,7 +27,7 @@ The examples use Python because it keeps the teaching code small and readable.
 | 07B Hybrid RAG | `examples/07b_hybrid_rag.py` | Combine keyword and vector-style signals |
 | 08 Gmail and async work | Future cloud module | Connect Gmail, Pub/Sub, tickets, and background processing |
 | 09 Human escalation and guardrails | Future guardrails module | Label safe replies as `AI Answered` and risky messages as `Human Needed` |
-| 10 Evals | Future eval suite | Test classification, retrieval, escalation, and answer quality |
+| 10 Evals | Future eval suite | Run sample support emails through the workflow and review spreadsheet-style pass/fail results |
 | 11 Tracing, logs, and cost | Future observability module | Inspect model calls, tool calls, traces, latency, and spend |
 | 12 Deployment | Future deployment guide | Deploy the finished system to Google Cloud |
 
@@ -55,6 +55,48 @@ That gives us room to teach production patterns:
 - retry failures
 - send the result later
 - trace and evaluate what happened
+
+The course should show the progression from simple to production-shaped:
+
+```text
+local fake email workflow
+-> Gmail polling
+-> Gmail Pub/Sub events
+-> Cloud Run service
+```
+
+Polling is easier to explain because the app checks Gmail on a schedule.
+It is a good bridge for local testing and a first working demo.
+
+Event-based processing is the final architecture.
+Gmail notifies Pub/Sub, Pub/Sub calls Cloud Run, and the app processes the changed mailbox state.
+This avoids constant polling and matches how production event systems are usually built.
+
+The main support agent should be a Cloud Run service.
+Use a Cloud Run job or local CLI for one-off work such as policy ingestion.
+
+## Why Not Just n8n or Codex Automations
+
+Students will reasonably ask why this is not just an automation workflow.
+
+The answer is that simple automation tools are useful for prototypes, personal workflows, and low-risk internal tasks.
+They are not always the right abstraction when the system touches customers, private business data, or operational decisions.
+
+This course is teaching the production concerns that appear after the basic demo works:
+
+- monitoring
+- tracing
+- evals
+- tests
+- retries
+- failure handling
+- guardrails
+- human review
+- custom business logic
+- deployment control
+
+A naive version can be hacked together with integrations.
+A business system needs clear boundaries, explicit failure modes, and a way to inspect what happened.
 
 ## Retrieval Teaching Thread
 
@@ -86,6 +128,19 @@ Use Gmail labels as the review surface:
 
 This makes guardrails visible.
 Students can inspect the inbox and see exactly what work the agent did.
+
+## Eval Teaching Thread
+
+Evals should be practical and visible.
+
+Start with a CSV or spreadsheet of sample support emails.
+Each row should include the input email, the expected classification, the expected document, the expected action, and notes on what a good answer must include.
+
+The eval runner should pass each sample email into the support workflow and write results back out to a CSV.
+Some checks can be automatic, such as matching labels or document ids.
+Other checks should be manually reviewed, such as whether the final answer is clear, grounded, and safe to send.
+
+This teaches students to evaluate the whole workflow instead of treating model quality as a vague feeling.
 
 ## Application Structure
 

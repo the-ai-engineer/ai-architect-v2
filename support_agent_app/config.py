@@ -17,8 +17,7 @@ class AppConfig:
     @classmethod
     def from_env(cls) -> "AppConfig":
         return cls(
-            model_name=os.getenv("AI_ARCHITECT_MODEL", "openai/gpt-4.1-mini"),
+            model_name=os.getenv("AI_ARCHITECT_MODEL", "openai/gpt-5.5"),
             policy_dir=Path(os.getenv("POLICY_DIR", str(REPO_ROOT / "docs" / "policies"))),
             database_url=os.getenv("DATABASE_URL"),
         )
-

@@ -80,7 +80,7 @@ observations: list[str] = []
 
 for _ in range(4):
     response = client.responses.parse(
-        model="gpt-5-mini",
+        model="gpt-5.5",
         instructions=(
             "You are a support agent. Choose the next tool. "
             "Use documents before answering. If the question is unsafe, choose human_needed."

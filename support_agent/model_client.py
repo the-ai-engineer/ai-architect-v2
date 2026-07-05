@@ -45,7 +45,7 @@ class FakeModelClient:
 class OpenAITextClient:
     """Small OpenAI wrapper used only when students opt into a real API call."""
 
-    def __init__(self, model: str = "gpt-4.1-mini") -> None:
+    def __init__(self, model: str = "gpt-5.5") -> None:
         self.model = model
 
     def complete(self, prompt: str) -> str:
@@ -53,7 +53,7 @@ class OpenAITextClient:
             from openai import OpenAI
         except ImportError as exc:
             raise RuntimeError(
-                "Install the OpenAI dependency with `pip install -e '.[openai]'`."
+                "Install dependencies with `pip install -e .`."
             ) from exc
 
         client = OpenAI()

@@ -56,7 +56,7 @@ class Classification(BaseModel):
 customer_email = "Can I return a backpack if I opened the box but have not used it?"
 
 classification_response = client.responses.parse(
-    model="gpt-5-mini",
+    model="gpt-5.5",
     instructions="Decide if the support email can be answered from public policy docs.",
     input=customer_email,
     text_format=Classification,
@@ -77,7 +77,7 @@ if not document_result["found"]:
 document = document_result["document"]
 
 reply_response = client.responses.create(
-    model="gpt-5-mini",
+    model="gpt-5.5",
     instructions="Answer the customer using only the support policy document.",
     input=f"Customer email:\n{customer_email}\n\nPolicy document:\n{document['body']}",
 )

@@ -54,7 +54,7 @@ class SupportClassification(BaseModel):
 email_text = "Hi, can I return a backpack if I opened the box but have not used it?"
 
 response = client.responses.parse(
-    model="gpt-5-mini",
+    model="gpt-5.5",
     instructions="Classify the customer support email.",
     input=email_text,
     text_format=SupportClassification,
@@ -77,7 +77,7 @@ class CustomerRequest(BaseModel):
 email_text = "Can you tell me whether order NS-1029 has shipped yet?"
 
 response = client.responses.parse(
-    model="gpt-5-mini",
+    model="gpt-5.5",
     instructions="Extract the customer request from the email.",
     input=email_text,
     text_format=CustomerRequest,

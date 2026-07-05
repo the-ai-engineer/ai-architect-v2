@@ -43,6 +43,40 @@ Customer sends email
 
 Customer support is a strong teaching domain because it has repeated questions, clear policies, business context, human escalation, and measurable outcomes.
 
+## Why Not a Simpler Automation Tool
+
+You could build a naive version of this system with n8n, Zapier, Codex automations, Claude integrations, or a small script.
+For a personal workflow, that might be enough.
+
+That is not what this course is trying to teach.
+
+The course is about building AI systems you can trust inside a real business.
+Once an AI system starts replying to customers, using business data, or making decisions on your behalf, you need more than a quick automation.
+
+Custom code gives you control over the parts that matter as the system gets more complex:
+
+- logs
+- traces
+- tests
+- evals
+- retries
+- failure handling
+- guardrails
+- human review
+- custom business logic
+- deployment and monitoring
+
+The useful distinction is:
+
+```text
+simple automation = good for prototypes and personal workflows
+custom system = better when the workflow becomes business-critical
+```
+
+The course should not dismiss automation tools.
+They are useful.
+The point is that they are not always the right abstraction when you need robust monitoring, explicit guardrails, custom code, and a system you can operate over time.
+
 ## Synchronous vs Asynchronous AI Systems
 
 A typical chatbot is synchronous.
@@ -68,6 +102,16 @@ log what happened
 
 This is one of the most important production patterns in the course.
 
+There are two ways to build the email trigger:
+
+- polling: check Gmail every few minutes and process new messages
+- event-based: let Gmail notify the app through Pub/Sub when the mailbox changes
+
+Polling is simpler to understand and can be good for local development or early prototypes.
+Event-based processing is the better final production shape because the system reacts to new work, avoids constant checking, and fits naturally with Cloud Run services.
+
+The course can show polling as the stepping stone, then move to event-based processing for the deployed app.
+
 ## Lessons
 
 | # | Lesson | Main idea | Code |
@@ -82,7 +126,7 @@ This is one of the most important production patterns in the course.
 | 07 | Vector Search and Hybrid RAG | Learn vector search and hybrid search, then compare them with the simpler document-registry path | `07a_vector_rag.py`, `07b_hybrid_rag.py` |
 | 08 | Gmail and Async Work | Connect Gmail, Pub/Sub, tickets, and background processing | Future cloud sample |
 | 09 | Human Escalation and Guardrails | Keep the agent on topic, avoid sensitive answers, and label threads as `AI Answered` or `Human Needed` | Future guardrails sample |
-| 10 | Evals | Test classification, retrieval, answers, and escalation behavior | Future eval suite |
+| 10 | Evals | Build a spreadsheet-style eval set, run sample emails through the system, and review pass/fail results | Future eval suite |
 | 11 | Tracing, Logs, and Cost | Inspect model calls, tool calls, latency, failures, and spend | Future observability sample |
 | 12 | Deployment | Deploy the finished support agent to Google Cloud | Future deployment guide |
 
@@ -114,6 +158,20 @@ Lessons 06 onward build the real application:
 - evals
 - tracing
 - deployment
+
+The architecture progression should be explicit:
+
+```text
+local examples
+-> local fake email workflow
+-> Gmail polling for a simple working demo
+-> Gmail Pub/Sub events for the production-shaped demo
+-> Cloud Run service for the main app
+-> Cloud Run job or local CLI for one-off work like policy ingestion
+```
+
+The main deployed app is a Cloud Run service because it receives HTTP requests from Pub/Sub and exposes health or admin endpoints.
+Batch jobs are useful for ingestion, maintenance, and scheduled polling, but they are not the main support agent surface.
 
 ## Retrieval Progression
 
@@ -149,12 +207,71 @@ Each example should be small, runnable, and easy to explain in a recording.
 
 Use OpenAI for the early model calls, structured outputs, and RAG examples.
 It keeps the teaching path simple.
+The current default OpenAI model in the repo is `gpt-5.5`.
 
 Lesson 05 introduces ADK and the idea that model providers are a configuration choice.
 The app should be able to swap providers through its model setting.
+The ADK sample follows the ADK 2.x `Agent` style and uses LiteLLM for non-Gemini providers.
 
 Do not make students learn a new framework, a new model provider, and retrieval at the same time.
 Provider choice is part of the architecture, but it should not distract from the system being built.
+
+## Testing and Evals
+
+Evals should start with sample support emails, not complex infrastructure.
+
+The course should include a simple eval file that looks like a spreadsheet:
+
+```text
+id
+email_subject
+email_body
+expected_category
+expected_label
+expected_document_id
+expected_should_reply
+expected_key_points
+actual_category
+actual_label
+actual_document_id
+actual_reply
+classification_pass
+retrieval_pass
+answer_pass
+overall_pass
+notes
+```
+
+Students can run the evals by passing sample emails into the same support workflow used by the app.
+The output should be another CSV that compares expected results with actual results.
+
+Manual review is part of the lesson.
+Students should inspect the answers and mark pass or fail for the parts that require judgment:
+
+- did the system classify the email correctly?
+- did it choose the right support document?
+- did it answer using only trusted policy context?
+- did it include the required policy points?
+- did it escalate when it should?
+- would you be comfortable sending this reply to a customer?
+
+Automated checks should handle the obvious parts:
+
+- expected label matches actual label
+- expected document matches actual document
+- escalation cases do not generate a customer reply
+- answers do not include banned phrases
+- answers include required key points where possible
+
+LLM-as-judge can come later, but it should not be the first eval pattern.
+Start with visible sample data and human review because it is easier to understand and closer to real QA.
+
+The core lesson is:
+
+```text
+Do not eval the model in the abstract.
+Eval the business workflow.
+```
 
 ## Guardrails and Human Escalation
 
