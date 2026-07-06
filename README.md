@@ -38,15 +38,20 @@ uv run python examples/04_agent_by_hand.py
 uv run python examples/05_first_adk_agent.py
 uv run python examples/06a_file_rag.py
 uv run python examples/06b_sql_rag.py
-uv run python examples/07a_vector_rag.py
-uv run python examples/07b_hybrid_rag.py
 ```
 
 Load the sample support policies:
 
 ```bash
 uv run python -m support_agent_app.ingest_policies --dry-run
-DATABASE_URL="postgresql://..." uv run --extra db python -m support_agent_app.ingest_policies
+DATABASE_URL="postgresql://..." uv run python -m support_agent_app.ingest_policies
+```
+
+Run the Postgres retrieval examples:
+
+```bash
+DATABASE_URL="postgresql://..." uv run python examples/07a_vector_rag.py
+DATABASE_URL="postgresql://..." uv run python examples/07b_hybrid_rag.py
 ```
 
 Run the deployable app locally:
@@ -78,7 +83,7 @@ uv run python -m unittest discover -s tests
 - Gmail and Pub/Sub for asynchronous email ingestion.
 - Cloud Run for deployment.
 - Cloud SQL Postgres for state and support documents.
-- pgvector for the vector-search lesson.
+- pgvector for the vector search and hybrid search lessons.
 - Cloud Logging, Cloud Trace, and Cloud Monitoring for observability.
 
 ## Repo Structure

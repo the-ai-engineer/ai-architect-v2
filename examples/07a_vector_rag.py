@@ -1,21 +1,66 @@
 """
 Vector RAG
 
-This shows the shape of vector search without needing an embedding API key.
-The fake embed function turns text into token counts so the example stays local.
+Use Postgres and pgvector to store support policy embeddings and retrieve the
+most similar documents for a customer question.
 """
 
 from __future__ import annotations
 
 import argparse
-import math
-from collections import Counter
+import os
 from pathlib import Path
 
+import psycopg
+from dotenv import load_dotenv
+from openai import OpenAI
 from pydantic import BaseModel
 
 
 POLICY_DIR = Path("docs/policies")
+EMBEDDING_MODEL = "text-embedding-3-small"
+EMBEDDING_DIMENSIONS = 1536
+
+
+CREATE_TABLE_SQL = f"""
+create extension if not exists vector;
+
+create table if not exists lesson_vector_documents (
+    id text primary key,
+    title text not null,
+    body text not null,
+    embedding vector({EMBEDDING_DIMENSIONS}) not null,
+    updated_at timestamptz not null default now()
+);
+"""
+
+
+UPSERT_DOCUMENT_SQL = """
+insert into lesson_vector_documents (
+    id,
+    title,
+    body,
+    embedding,
+    updated_at
+)
+values (%s, %s, %s, %s::vector, now())
+on conflict (id) do update set
+    title = excluded.title,
+    body = excluded.body,
+    embedding = excluded.embedding,
+    updated_at = now();
+"""
+
+
+VECTOR_SEARCH_SQL = """
+select
+    id,
+    title,
+    1 - (embedding <=> %s::vector) as similarity
+from lesson_vector_documents
+order by embedding <=> %s::vector
+limit %s;
+"""
 
 
 class SupportDocument(BaseModel):
@@ -24,23 +69,87 @@ class SupportDocument(BaseModel):
     body: str
 
 
+class SearchResult(BaseModel):
+    id: str
+    title: str
+    similarity: float
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Lesson 07A: vector-search shape without an API key.")
+    load_dotenv()
+
+    parser = argparse.ArgumentParser(description="Lesson 07A: vector RAG with Postgres.")
     parser.add_argument("question", nargs="?", default="How long does shipping take to Canada?")
+    parser.add_argument("--limit", type=int, default=3)
     args = parser.parse_args()
 
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        print("Set DATABASE_URL to run this example against Postgres with pgvector.")
+        print(
+            "Example: DATABASE_URL='postgresql://localhost/ai_architect' "
+            "uv run python examples/07a_vector_rag.py"
+        )
+        return
+
+    if not os.getenv("OPENAI_API_KEY"):
+        print("Set OPENAI_API_KEY to create embeddings for this example.")
+        return
+
+    client = OpenAI()
     documents = load_policy_documents()
-    query_vector = embed(args.question)
-    ranked = sorted(
-        ((cosine_similarity(query_vector, embed(document.body)), document) for document in documents),
-        key=lambda row: row[0],
-        reverse=True,
-    )
+
+    with psycopg.connect(database_url) as conn:
+        setup_database(conn)
+        ingest_documents(conn, client, documents)
+        results = search_documents(conn, client, args.question, args.limit)
 
     print(f"Question: {args.question}")
     print()
-    for score, document in ranked[:3]:
-        print(f"{score:.3f} {document.id}: {document.title}")
+    for result in results:
+        print(f"{result.similarity:.3f} {result.id}: {result.title}")
+
+
+def setup_database(conn: psycopg.Connection) -> None:
+    with conn.cursor() as cur:
+        cur.execute(CREATE_TABLE_SQL)
+
+
+def ingest_documents(
+    conn: psycopg.Connection,
+    client: OpenAI,
+    documents: list[SupportDocument],
+) -> None:
+    with conn.cursor() as cur:
+        for document in documents:
+            embedding = embed(client, document.body)
+            cur.execute(
+                UPSERT_DOCUMENT_SQL,
+                (
+                    document.id,
+                    document.title,
+                    document.body,
+                    to_pgvector(embedding),
+                ),
+            )
+
+
+def search_documents(
+    conn: psycopg.Connection,
+    client: OpenAI,
+    question: str,
+    limit: int,
+) -> list[SearchResult]:
+    query_embedding = to_pgvector(embed(client, question))
+
+    with conn.cursor() as cur:
+        cur.execute(VECTOR_SEARCH_SQL, (query_embedding, query_embedding, limit))
+        rows = cur.fetchall()
+
+    return [
+        SearchResult(id=row[0], title=row[1], similarity=float(row[2]))
+        for row in rows
+    ]
 
 
 def load_policy_documents() -> list[SupportDocument]:
@@ -70,20 +179,17 @@ def extract_title(markdown: str, fallback: str) -> str:
     return fallback
 
 
-def embed(text: str) -> Counter[str]:
-    tokens = [token.strip(".,!?():").lower() for token in text.split()]
-    return Counter(token for token in tokens if len(token) > 3)
+def embed(client: OpenAI, text: str) -> list[float]:
+    response = client.embeddings.create(
+        model=EMBEDDING_MODEL,
+        input=text,
+        dimensions=EMBEDDING_DIMENSIONS,
+    )
+    return response.data[0].embedding
 
 
-def cosine_similarity(left: Counter[str], right: Counter[str]) -> float:
-    terms = set(left) | set(right)
-    numerator = sum(left[term] * right[term] for term in terms)
-    left_norm = math.sqrt(sum(value * value for value in left.values()))
-    right_norm = math.sqrt(sum(value * value for value in right.values()))
-    if left_norm == 0 or right_norm == 0:
-        return 0
-
-    return numerator / (left_norm * right_norm)
+def to_pgvector(values: list[float]) -> str:
+    return "[" + ",".join(str(value) for value in values) + "]"
 
 
 if __name__ == "__main__":

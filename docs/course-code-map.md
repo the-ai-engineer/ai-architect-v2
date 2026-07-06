@@ -24,8 +24,8 @@ The examples use Python because it keeps the teaching code small and readable.
 | 05 First ADK agent | `examples/05_first_adk_agent.py` | Move from hand-built loop to an ADK agent with document lookup tools |
 | 06A File RAG | `examples/06a_file_rag.py` | Load trusted markdown files and pass the right document as context |
 | 06B SQL RAG | `examples/06b_sql_rag.py` and `support_agent_app/ingest_policies.py` | Turn policy markdown into Postgres rows |
-| 07A Vector RAG | `examples/07a_vector_rag.py` | Show the vector-search retrieval shape with a tiny local embedding |
-| 07B Hybrid RAG | `examples/07b_hybrid_rag.py` | Combine keyword and vector-style signals |
+| 07A Vector RAG | `examples/07a_vector_rag.py` | Store embeddings in Postgres with pgvector and run vector search |
+| 07B Hybrid RAG | `examples/07b_hybrid_rag.py` | Combine Postgres full-text search and pgvector similarity |
 | 08 Gmail and async work | Future cloud module | Connect Gmail, Pub/Sub, tickets, and background processing |
 | 09 Human escalation and guardrails | Future guardrails module | Label safe replies as `AI Answered` and risky messages as `Human Needed` |
 | 10 Evals | Future eval suite | Run sample support emails through the workflow and review spreadsheet-style pass/fail results |

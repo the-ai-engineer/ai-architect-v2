@@ -53,8 +53,13 @@ uv run python examples/04_agent_by_hand.py
 uv run python examples/05_first_adk_agent.py
 uv run python examples/06a_file_rag.py
 uv run python examples/06b_sql_rag.py
-uv run python examples/07a_vector_rag.py
-uv run python examples/07b_hybrid_rag.py
 uv run python -m support_agent_app.ingest_policies --dry-run
 uv run python -m support_agent_app.main
+```
+
+Run these when `DATABASE_URL` points at a Postgres database with pgvector:
+
+```bash
+DATABASE_URL="postgresql://..." uv run python examples/07a_vector_rag.py
+DATABASE_URL="postgresql://..." uv run python examples/07b_hybrid_rag.py
 ```

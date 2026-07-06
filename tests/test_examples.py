@@ -25,6 +25,16 @@ class LessonExamplesTest(unittest.TestCase):
             self.assertNotIn("from support_agent_app", source, msg=str(path))
             self.assertNotIn("import support_agent_app", source, msg=str(path))
 
+    def test_vector_examples_use_postgres(self) -> None:
+        for path in [Path("examples/07a_vector_rag.py"), Path("examples/07b_hybrid_rag.py")]:
+            source = path.read_text(encoding="utf-8")
+
+            self.assertIn("psycopg.connect", source, msg=str(path))
+            self.assertIn("create extension if not exists vector", source, msg=str(path))
+            self.assertIn("<=>", source, msg=str(path))
+            self.assertNotIn("from collections import Counter", source, msg=str(path))
+            self.assertNotIn("cosine_similarity", source, msg=str(path))
+
     def test_document_registry_finds_returns_policy(self) -> None:
         result = find_support_document("What is your returns policy?")
 

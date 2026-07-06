@@ -13,6 +13,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "openai" },
+    { name = "psycopg", extra = ["binary"] },
     { name = "pydantic" },
     { name = "python-dotenv" },
 ]
@@ -48,6 +49,7 @@ requires-dist = [
     { name = "openai", specifier = ">=2.44.0" },
     { name = "opentelemetry-api", marker = "extra == 'cloud'" },
     { name = "opentelemetry-sdk", marker = "extra == 'cloud'" },
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.3.4" },
     { name = "psycopg", extras = ["binary"], marker = "extra == 'db'", specifier = ">=3.3.4" },
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
