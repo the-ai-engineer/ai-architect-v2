@@ -26,7 +26,7 @@ EMBEDDING_DIMENSIONS = 1536
 CREATE_TABLE_SQL = f"""
 create extension if not exists vector;
 
-create table if not exists lesson_hybrid_documents (
+create table if not exists documents (
     id text primary key,
     title text not null,
     body text not null,
@@ -40,14 +40,14 @@ create table if not exists lesson_hybrid_documents (
     updated_at timestamptz not null default now()
 );
 
-create index if not exists lesson_hybrid_documents_search_idx
-    on lesson_hybrid_documents
+create index if not exists documents_search_idx
+    on documents
     using gin (search_document);
 """
 
 
 UPSERT_DOCUMENT_SQL = """
-insert into lesson_hybrid_documents (
+insert into documents (
     id,
     title,
     body,
@@ -80,7 +80,7 @@ select
         ts_rank_cd(document.search_document, query.keyword_query) * 0.3
         + (1 - (document.embedding <=> query.embedding)) * 0.7
     ) as score
-from lesson_hybrid_documents document, query
+from documents document, query
 where
     document.search_document @@ query.keyword_query
     or document.embedding is not null

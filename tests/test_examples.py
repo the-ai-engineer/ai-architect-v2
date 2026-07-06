@@ -31,7 +31,9 @@ class LessonExamplesTest(unittest.TestCase):
 
             self.assertIn("psycopg.connect", source, msg=str(path))
             self.assertIn("create extension if not exists vector", source, msg=str(path))
+            self.assertIn("create table if not exists documents", source, msg=str(path))
             self.assertIn("<=>", source, msg=str(path))
+            self.assertNotIn("lesson_", source, msg=str(path))
             self.assertNotIn("from collections import Counter", source, msg=str(path))
             self.assertNotIn("cosine_similarity", source, msg=str(path))
 

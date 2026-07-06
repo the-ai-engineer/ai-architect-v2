@@ -25,10 +25,16 @@ EMBEDDING_DIMENSIONS = 1536
 CREATE_TABLE_SQL = f"""
 create extension if not exists vector;
 
-create table if not exists lesson_vector_documents (
+create table if not exists documents (
     id text primary key,
     title text not null,
     body text not null,
+    keywords text[] not null default '{{}}',
+    search_document tsvector generated always as (
+        setweight(to_tsvector('english', title), 'A') ||
+        setweight(to_tsvector('english', array_to_string(keywords, ' ')), 'B') ||
+        setweight(to_tsvector('english', body), 'C')
+    ) stored,
     embedding vector({EMBEDDING_DIMENSIONS}) not null,
     updated_at timestamptz not null default now()
 );
@@ -36,7 +42,7 @@ create table if not exists lesson_vector_documents (
 
 
 UPSERT_DOCUMENT_SQL = """
-insert into lesson_vector_documents (
+insert into documents (
     id,
     title,
     body,
@@ -57,7 +63,7 @@ select
     id,
     title,
     1 - (embedding <=> %s::vector) as similarity
-from lesson_vector_documents
+from documents
 order by embedding <=> %s::vector
 limit %s;
 """
