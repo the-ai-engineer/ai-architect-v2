@@ -10,7 +10,6 @@ ENV UV_LINK_MODE=copy
 WORKDIR /app
 
 COPY pyproject.toml uv.lock README.md ./
-COPY support_agent ./support_agent
 COPY support_agent_app ./support_agent_app
 COPY docs ./docs
 COPY sql ./sql

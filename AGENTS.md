@@ -33,7 +33,7 @@ Use ADK after the hand-built agent lesson.
 - `examples/01_basic_model_call.py` to `examples/04_agent_by_hand.py` are small teaching samples.
 - `examples/05_first_adk_agent.py` introduces the ADK-shaped support agent.
 - `examples/06a_file_rag.py`, `06b_sql_rag.py`, `07a_vector_rag.py`, and `07b_hybrid_rag.py` are separate retrieval examples.
-- `support_agent/` contains shared teaching code for lessons 01-04.
+- `examples/` contains standalone teaching code for the early lessons.
 - `support_agent_app/` contains the deployable application.
 - `sql/` contains the production-shaped Postgres schema.
 - `docs/policies/` contains editable sample support policies.

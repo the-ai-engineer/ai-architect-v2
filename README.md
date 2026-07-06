@@ -83,8 +83,7 @@ uv run python -m unittest discover -s tests
 
 ## Repo Structure
 
-- `examples/`: small runnable lesson examples.
-- `support_agent/`: plain Python teaching code for lessons 01-04.
+- `examples/`: small runnable standalone lesson examples.
 - `support_agent_app/`: deployable support agent application.
 - `support_agent_app/api.py`: FastAPI HTTP surface for Cloud Run.
 - `support_agent_app/services/`: document registry, Gmail labels, and policy ingestion.

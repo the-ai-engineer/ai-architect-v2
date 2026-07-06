@@ -19,4 +19,4 @@ create index support_documents_keywords_idx
     using gin (keywords)
     where is_active;
 
--- Run `python3 -m support_agent.ingest_policies` to load markdown files from docs/policies.
+-- Run `uv run python -m support_agent_app.ingest_policies` to load markdown files from docs/policies.

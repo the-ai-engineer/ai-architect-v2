@@ -32,4 +32,4 @@ cloud = [
 line-length = 100
 
 [tool.setuptools.packages.find]
-include = ["support_agent", "support_agent.*", "support_agent_app", "support_agent_app.*"]
+include = ["support_agent_app", "support_agent_app.*"]
