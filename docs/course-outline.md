@@ -21,9 +21,10 @@ Keeping each client in a separate Google Cloud project also makes billing and in
 We use OpenAI as the default model provider.
 The system should still be designed so the model provider can change later.
 
-We use Google ADK as the agent framework once the course moves past the fundamentals.
+We use Pydantic AI as the agent framework once the course moves past the fundamentals.
 There are many agent frameworks, and you can also build agents by hand.
 Frameworks are useful abstractions, not the core idea.
+Pydantic AI supports OpenAI and Anthropic directly, so students can change the model provider without rebuilding the agent loop.
 
 ## System We Build
 
@@ -34,7 +35,7 @@ Customer sends email
 -> Gmail receives it
 -> Pub/Sub notifies our app
 -> Cloud Run processes the ticket
--> ADK agent looks up the right support document from Postgres
+-> Pydantic AI agent looks up the right support document from Postgres
 -> OpenAI drafts a grounded answer
 -> guardrails approve, block, or escalate
 -> Gmail sends the reply and labels it AI Answered
@@ -121,7 +122,7 @@ The course can show polling as the stepping stone, then move to event-based proc
 | 02 | Structured Outputs | Classify a support email into typed data with Pydantic-style schemas | `examples/02_structured_outputs.py` |
 | 03 | Calls, Workflows, and Agents | Compare one model call, a deterministic workflow, and an agent | `examples/03_deterministic_workflow.py` |
 | 04 | Agent by Hand | Build a minimal tool-calling agent loop in Python | `examples/04_agent_by_hand.py` |
-| 05 | First ADK Agent | Move the same agent idea into ADK and explain why we now use a framework | `examples/05_first_adk_agent.py` |
+| 05 | First Framework Agent | Move the same agent idea into Pydantic AI and explain why we now use a framework | `examples/05_first_framework_agent.py` |
 | 06 | Simple RAG with Files and SQL | Load support docs from files, move them into Postgres, and query known documents as context | `06a_file_rag.py`, `06b_sql_rag.py` |
 | 07 | Vector Search and Hybrid RAG | Learn vector search and hybrid search, then compare them with the simpler document-registry path | `07a_vector_rag.py`, `07b_hybrid_rag.py` |
 | 08 | Gmail and Async Work | Connect Gmail, Pub/Sub, tickets, and background processing | Future cloud sample |
@@ -142,9 +143,10 @@ Students learn:
 - what an agent loop actually is
 - why agents are simpler than they look
 
-Lesson 05 introduces ADK.
+Lesson 05 introduces Pydantic AI.
+Run the lesson 05 example with `uv run python examples/05_first_framework_agent.py`.
 
-From that point onward, ADK is the course runtime.
+From that point onward, Pydantic AI is the course runtime.
 We do not keep rebuilding the same system in different frameworks.
 
 Lessons 06 onward build the real application:
@@ -153,8 +155,8 @@ Lessons 06 onward build the real application:
 - Postgres document lookup as the default production RAG tool
 - vector search as an alternative retrieval tool
 - hybrid search as an alternative for messier knowledge bases
-- human escalation as an ADK tool
-- Gmail reply as an ADK tool
+- human escalation as a Pydantic AI tool
+- Gmail reply as a Pydantic AI tool
 - evals
 - tracing
 - deployment
@@ -213,11 +215,20 @@ Each example should be small, runnable, and easy to explain in a recording.
 
 Use OpenAI for the early model calls, structured outputs, and RAG examples.
 It keeps the teaching path simple.
-The current default OpenAI model in the repo is `gpt-5.5`.
+The current default OpenAI model in the repo is `gpt-5.6`.
 
-Lesson 05 introduces ADK and the idea that model providers are a configuration choice.
+Lesson 05 introduces Pydantic AI and the idea that model providers are a configuration choice.
 The app should be able to swap providers through its model setting.
-The ADK sample follows the ADK 2.x `Agent` style and uses LiteLLM for non-Gemini providers.
+The sample uses Pydantic AI's direct OpenAI provider by default.
+Changing `AI_ARCHITECT_MODEL` to an `anthropic:` model uses Anthropic directly while keeping the same instructions and business tools.
+
+This is one reason to adopt a framework after building the loop by hand.
+The hand-built example exposes the provider's request, response, tool-call, and retry details.
+The framework normalises those details behind one agent interface, so changing models usually means changing configuration instead of rewriting orchestration code.
+
+Provider portability is not perfect.
+Native tools, model settings, token limits, structured output support, and response behaviour still differ between providers.
+The lesson should teach frameworks as a useful boundary, not as proof that every model is interchangeable.
 
 Do not make students learn a new framework, a new model provider, and retrieval at the same time.
 Provider choice is part of the architecture, but it should not distract from the system being built.
@@ -308,4 +319,4 @@ Build the mechanism by hand once.
 Then use the framework for the real system.
 
 The hand-built agent is there to make the concept clear.
-The ADK agent is the application we carry forward.
+The Pydantic AI agent is the application we carry forward.

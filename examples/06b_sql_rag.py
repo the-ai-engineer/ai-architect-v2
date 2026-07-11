@@ -12,22 +12,27 @@ from pathlib import Path
 from pydantic import BaseModel
 
 
-POLICY_DIR = Path("docs/policies")
+POLICY_DIR = Path(__file__).resolve().parents[1] / "docs" / "policies"
 
 
 UPSERT_DOCUMENT_SQL = """
 insert into support_documents (
     id,
     title,
+    category,
     summary,
     body,
+    keywords,
     updated_at
 )
-values (%s, %s, %s, %s, now())
+values (%s, %s, %s, %s, %s, %s, now())
 on conflict (id) do update set
     title = excluded.title,
+    category = excluded.category,
     summary = excluded.summary,
     body = excluded.body,
+    keywords = excluded.keywords,
+    is_active = true,
     updated_at = now();
 """
 
@@ -35,8 +40,10 @@ on conflict (id) do update set
 class SupportDocument(BaseModel):
     id: str
     title: str
+    category: str
     summary: str
     body: str
+    keywords: list[str]
 
 
 def main() -> None:
@@ -53,7 +60,9 @@ def main() -> None:
         {
             "id": documents[0].id,
             "title": documents[0].title,
+            "category": documents[0].category,
             "summary": documents[0].summary,
+            "keywords": documents[0].keywords,
             "body": documents[0].body[:120] + "...",
         }
     )
@@ -74,8 +83,10 @@ def load_policy_documents() -> list[SupportDocument]:
             SupportDocument(
                 id=path.stem,
                 title=extract_title(body, path.stem),
+                category=path.stem.removesuffix("-policy"),
                 summary=extract_summary(body),
                 body=body,
+                keywords=extract_keywords(path.stem),
             )
         )
 
@@ -103,6 +114,18 @@ def extract_summary(markdown: str) -> str:
         paragraph.append(stripped)
 
     return " ".join(paragraph)
+
+
+def extract_keywords(document_id: str) -> list[str]:
+    keyword_map = {
+        "account-policy": ["account", "login", "password", "access"],
+        "opening-hours": ["hours", "support", "weekend", "holiday"],
+        "privacy-policy": ["privacy", "data", "delete", "card"],
+        "refund-policy": ["refund", "return", "exchange", "opened"],
+        "shipping-policy": ["shipping", "delivery", "tracking", "package"],
+        "warranty-policy": ["warranty", "fault", "repair", "replacement"],
+    }
+    return keyword_map.get(document_id, document_id.split("-"))
 
 
 if __name__ == "__main__":

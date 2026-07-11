@@ -17,7 +17,7 @@ from openai import OpenAI
 from pydantic import BaseModel
 
 
-POLICY_DIR = Path("docs/policies")
+POLICY_DIR = Path(__file__).resolve().parents[1] / "docs" / "policies"
 EMBEDDING_MODEL = "text-embedding-3-small"
 EMBEDDING_DIMENSIONS = 1536
 
@@ -82,7 +82,7 @@ class SearchResult(BaseModel):
 
 
 def main() -> None:
-    load_dotenv()
+    load_dotenv(Path(__file__).with_name(".env"))
 
     parser = argparse.ArgumentParser(description="Lesson 07A: vector RAG with Postgres.")
     parser.add_argument("question", nargs="?", default="How long does shipping take to Canada?")
@@ -99,7 +99,7 @@ def main() -> None:
         return
 
     if not os.getenv("OPENAI_API_KEY"):
-        print("Set OPENAI_API_KEY to create embeddings for this example.")
+        print("Set OPENAI_API_KEY in examples/.env to create embeddings for this example.")
         return
 
     client = OpenAI()

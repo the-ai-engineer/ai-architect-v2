@@ -17,7 +17,8 @@ The system turns it into a ticket, looks up a known support document from Postgr
 
 Use OpenAI as the default teaching model.
 Use Google Cloud as the default deployment target.
-Use ADK after the hand-built agent lesson.
+Use Pydantic AI after the hand-built agent lesson.
+Show that the framework can switch between direct OpenAI and Anthropic providers.
 
 ## Code Style
 
@@ -31,7 +32,7 @@ Use ADK after the hand-built agent lesson.
 ## Structure
 
 - `examples/01_basic_model_call.py` to `examples/04_agent_by_hand.py` are small teaching samples.
-- `examples/05_first_adk_agent.py` introduces the ADK-shaped support agent.
+- `examples/05_first_framework_agent.py` introduces the Pydantic AI support agent.
 - `examples/06a_file_rag.py`, `06b_sql_rag.py`, `07a_vector_rag.py`, and `07b_hybrid_rag.py` are separate retrieval examples.
 - `examples/` contains standalone teaching code for the early lessons.
 - `support_agent_app/` contains the deployable application.
@@ -50,7 +51,7 @@ uv run python examples/01_basic_model_call.py
 uv run python examples/02_structured_outputs.py
 uv run python examples/03_deterministic_workflow.py
 uv run python examples/04_agent_by_hand.py
-uv run python examples/05_first_adk_agent.py
+uv run python examples/05_first_framework_agent.py
 uv run python examples/06a_file_rag.py
 uv run python examples/06b_sql_rag.py
 uv run python -m support_agent_app.ingest_policies --dry-run

@@ -7,21 +7,26 @@ These are intentionally simple and runnable on a local machine.
 They should be self-contained so each lesson can be taught from one open file.
 
 Second, it will have the finished support agent.
-That app uses ADK, RAG, Gmail, Google Cloud, evals, tracing, and deployment.
+That app uses Pydantic AI, RAG, Gmail, Google Cloud, evals, tracing, and deployment.
 
 The course ideas are language agnostic.
 The examples use Python because it keeps the teaching code small and readable.
+
+## Current Repo Coverage
+
+Lessons 01 to 07 are runnable in this repo today.
+Lessons 08 to 12 document the target production shape and will add Gmail, Pub/Sub, guardrails, evals, observability, and deployment code as the course progresses.
 
 ## Lesson Plan
 
 | Lesson | Code shape | Outcome |
 |---|---|---|
-| 00 Introduction to AI systems | No code | Explain the project, customer support domain, async systems, Python examples, Google Cloud, OpenAI, and ADK |
+| 00 Introduction to AI systems | No code | Explain the project, customer support domain, async systems, Python examples, Google Cloud, OpenAI, and Pydantic AI |
 | 01 Basic model call | `examples/01_basic_model_call.py` | Call a model through a tiny boundary |
 | 02 Structured outputs | `examples/02_structured_outputs.py` | Turn a support email into a typed classification |
 | 03 Calls, workflows, and agents | `examples/03_deterministic_workflow.py` | Compare one model call, a fixed workflow, and an agent |
 | 04 Agent by hand | `examples/04_agent_by_hand.py` | Build the agent loop without a framework |
-| 05 First ADK agent | `examples/05_first_adk_agent.py` | Move from hand-built loop to an ADK agent with document lookup tools |
+| 05 First framework agent | `examples/05_first_framework_agent.py` | Move from the hand-built loop to Pydantic AI and switch providers through configuration |
 | 06A File RAG | `examples/06a_file_rag.py` | Load trusted markdown files and pass the right document as context |
 | 06B SQL RAG | `examples/06b_sql_rag.py` and `support_agent_app/ingest_policies.py` | Turn policy markdown into Postgres rows |
 | 07A Vector RAG | `examples/07a_vector_rag.py` | Store embeddings in Postgres with pgvector and run vector search |
@@ -39,8 +44,13 @@ Do not teach a concept and then force students to reimplement it in a different 
 The hand-built agent is a microscope.
 It shows what an agent is.
 
-After that, ADK is the course runtime.
-All later lessons should build forward from the ADK version.
+After that, Pydantic AI is the course runtime.
+All later lessons should build forward from the Pydantic AI version.
+
+Lesson 05 should make the framework boundary explicit.
+The hand-built agent teaches the mechanics but includes OpenAI-specific request and tool-call code.
+Pydantic AI keeps the agent's instructions and tools stable while a model string selects OpenAI or Anthropic.
+This reduces provider-specific orchestration code, but it does not make provider capabilities identical.
 
 ## Async Teaching Thread
 
@@ -153,7 +163,7 @@ The deployable app lives in `support_agent_app`.
 
 - `api.py` is the Cloud Run HTTP surface.
 - `config.py` reads environment variables.
-- `agents/` contains ADK agent definitions.
+- `agents/` contains Pydantic AI agent definitions.
 - `services/` contains app logic that can be tested without cloud services.
 - `integrations/` contains external system boundaries like Postgres and Gmail.
 

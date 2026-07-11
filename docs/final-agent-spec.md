@@ -7,6 +7,10 @@ The finished application is an AI customer support agent.
 A customer sends an email to a support inbox.
 The system reads the message, creates a ticket, looks up the right support document, drafts an answer, and either replies by email or escalates to a human.
 
+This spec describes the target application the course builds toward.
+The current runnable repo covers the early local lessons and the support document registry first.
+Gmail, Pub/Sub, guardrails, evals, observability, and deployment code are added later in the course path.
+
 The operational interface stays simple.
 If the AI answers the message, the email gets an `AI Answered` Gmail label.
 If the AI cannot answer safely, the email gets a `Human Needed` Gmail label and a person handles it.
@@ -65,7 +69,7 @@ The demo should end like this:
 2. Gmail sends a mailbox-change event through Pub/Sub.
 3. Cloud Run receives the event.
 4. The app fetches the new email and stores it as a ticket.
-5. The ADK support agent looks up the right support document from Postgres.
+5. The Pydantic AI support agent looks up the right support document from Postgres.
 6. OpenAI drafts a grounded answer.
 7. Guardrails decide whether the answer is safe to send.
 8. Gmail sends the reply and labels the thread `AI Answered`, or the app labels it `Human Needed`.
@@ -96,7 +100,7 @@ Gmail support inbox
   -> Pub/Sub
   -> Cloud Run webhook
   -> ticket store
-  -> ADK support agent
+  -> Pydantic AI support agent
       -> classify question
       -> inspect support document index
       -> load the right support document
@@ -132,15 +136,19 @@ The reusable prompt lives in `docs/resources/deploy-with-codex-prompt.md`.
 
 Use OpenAI as the default model provider.
 It is the cleanest teaching path for model calls, structured outputs, embeddings, answer generation, and evals.
-The default OpenAI model is `gpt-5.5`.
+The default OpenAI model is `gpt-5.6`.
 
 Use Google Cloud as the default deployment target.
 It is the best fit for Gmail, Pub/Sub, Cloud Run, Cloud SQL, Cloud Trace, Cloud Logging, and Cloud Monitoring.
 
-Use ADK from lesson 5 onward.
+Use Pydantic AI from lesson 5 onward.
 Students first build an agent by hand so they understand the loop.
-Then ADK becomes the production framework for the rest of the course.
-The app uses ADK 2.x style `Agent` definitions and LiteLLM for provider switching.
+Then Pydantic AI becomes the production framework for the rest of the course.
+The app uses OpenAI directly by default and can use Anthropic directly through the same agent interface.
+
+The framework makes model changes easier because it owns the provider-specific agent loop and tool-call format.
+The business tools, instructions, and application boundaries can stay the same.
+Provider-native tools and model-specific settings may still require changes, so provider portability must be tested rather than assumed.
 
 ## Core Components
 
@@ -174,7 +182,7 @@ support_agent_app/
 
 Keep business logic in `services`.
 Keep external APIs in `integrations`.
-Keep ADK code in `agents`.
+Keep Pydantic AI code in `agents`.
 Keep small teaching examples in `examples`.
 
 ## Human Escalation

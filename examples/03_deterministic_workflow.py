@@ -7,16 +7,17 @@ The model can classify or draft, but your code owns the control flow.
 
 import os
 from enum import Enum
+from pathlib import Path
 
 from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel
 
-load_dotenv()
+load_dotenv(Path(__file__).with_name(".env"))
 
 
 if not os.getenv("OPENAI_API_KEY"):
-    print("Set OPENAI_API_KEY to run this example.")
+    print("Set OPENAI_API_KEY in examples/.env to run this example.")
     raise SystemExit(0)
 
 
@@ -90,7 +91,7 @@ POLICY_DOCUMENTS = [
 
 def classify(email: Email) -> Classification:
     response = client.responses.parse(
-        model="gpt-5.5",
+        model="gpt-5.6",
         instructions="Decide if the support email can be answered from public policy docs.",
         input=f"Subject: {email.subject}\n\n{email.body}",
         text_format=Classification,
@@ -110,7 +111,7 @@ def find_policy_document(email: Email) -> PolicyDocument | None:
 
 def draft_reply(email: Email, document: PolicyDocument) -> str:
     response = client.responses.create(
-        model="gpt-5.5",
+        model="gpt-5.6",
         instructions="Answer the customer using only the support policy document.",
         input=f"Customer email:\n{email.body}\n\nPolicy document:\n{document.body}",
     )

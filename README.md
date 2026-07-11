@@ -16,26 +16,27 @@ Send an email to a support inbox
 ```
 
 The course starts with small Python examples.
-Then it moves into ADK, RAG, Gmail, Google Cloud, evals, tracing, and deployment.
+Then it moves into Pydantic AI, RAG, Gmail, Google Cloud, evals, tracing, and deployment.
 
 ## Start Here
 
 Read the finished application spec:
 
-- [docs/course-outline.md](/Users/owainlewis/Code/github/ai-engineer/ai-architect-v2/docs/course-outline.md)
-- [docs/final-agent-spec.md](/Users/owainlewis/Code/github/ai-engineer/ai-architect-v2/docs/final-agent-spec.md)
-- [docs/course-code-map.md](/Users/owainlewis/Code/github/ai-engineer/ai-architect-v2/docs/course-code-map.md)
-- [docs/resources/deploy-with-codex-prompt.md](/Users/owainlewis/Code/github/ai-engineer/ai-architect-v2/docs/resources/deploy-with-codex-prompt.md)
+- [docs/course-outline.md](docs/course-outline.md)
+- [docs/final-agent-spec.md](docs/final-agent-spec.md)
+- [docs/course-code-map.md](docs/course-code-map.md)
+- [docs/resources/deploy-with-codex-prompt.md](docs/resources/deploy-with-codex-prompt.md)
 
 Run the first examples:
 
 ```bash
 uv sync
+cp examples/.env.sample examples/.env
 uv run python examples/01_basic_model_call.py
 uv run python examples/02_structured_outputs.py
 uv run python examples/03_deterministic_workflow.py
 uv run python examples/04_agent_by_hand.py
-uv run python examples/05_first_adk_agent.py
+uv run python examples/05_first_framework_agent.py
 uv run python examples/06a_file_rag.py
 uv run python examples/06b_sql_rag.py
 ```
@@ -43,15 +44,20 @@ uv run python examples/06b_sql_rag.py
 Load the sample support policies:
 
 ```bash
+cp support_agent_app/.env.sample support_agent_app/.env
 uv run python -m support_agent_app.ingest_policies --dry-run
-DATABASE_URL="postgresql://..." uv run python -m support_agent_app.ingest_policies
+createdb ai_architect || true
+psql -d ai_architect -f sql/001_support_document_registry.sql
+uv run python -m support_agent_app.ingest_policies
 ```
 
 Run the Postgres retrieval examples:
 
+These require Postgres with pgvector and an OpenAI API key.
+
 ```bash
-DATABASE_URL="postgresql://..." uv run python examples/07a_vector_rag.py
-DATABASE_URL="postgresql://..." uv run python examples/07b_hybrid_rag.py
+uv run python examples/07a_vector_rag.py
+uv run python examples/07b_hybrid_rag.py
 ```
 
 Run the deployable app locally:
@@ -78,8 +84,9 @@ uv run python -m unittest discover -s tests
 - Python for the examples.
 - `uv` for package management and running commands.
 - The ideas translate to other languages.
-- OpenAI `gpt-5.5` as the default model provider.
-- Google ADK 2.x for the agent framework once students understand the agent loop.
+- OpenAI `gpt-5.6` as the default model provider.
+- Pydantic AI for the agent framework once students understand the agent loop.
+- OpenAI by default, with Anthropic shown as a direct provider switch.
 - Gmail and Pub/Sub for asynchronous email ingestion.
 - Cloud Run for deployment.
 - Cloud SQL Postgres for state and support documents.
@@ -92,7 +99,7 @@ uv run python -m unittest discover -s tests
 - `support_agent_app/`: deployable support agent application.
 - `support_agent_app/api.py`: FastAPI HTTP surface for Cloud Run.
 - `support_agent_app/services/`: document registry, Gmail labels, and policy ingestion.
-- `support_agent_app/agents/`: ADK agent definitions.
+- `support_agent_app/agents/`: Pydantic AI agent definitions.
 - `support_agent_app/integrations/`: external system boundaries.
 - `docs/policies/`: editable support policy documents.
 - `docs/resources/`: reusable course prompts and support material.
@@ -101,5 +108,5 @@ uv run python -m unittest discover -s tests
 ## Repo Status
 
 This repo is being built lesson by lesson.
-The early examples are intentionally small.
-The production app will appear as the course moves from fundamentals into ADK and Google Cloud.
+Lessons 01 to 07 are runnable now.
+Lessons 08 to 12 describe the target production shape and will fill in Gmail, Pub/Sub, guardrails, evals, observability, and deployment code as the course moves forward.
