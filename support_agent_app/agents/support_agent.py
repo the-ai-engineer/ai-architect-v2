@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from pydantic_ai import Agent
 
 from support_agent_app.config import AppConfig
 from support_agent_app.services.document_registry import find_support_document, list_support_documents
@@ -24,23 +24,19 @@ Rules:
 """
 
 
-def build_support_agent(config: AppConfig | None = None) -> Any:
-    """Build the ADK support agent."""
-    from google.adk.agents.llm_agent import Agent
-    from google.adk.models.lite_llm import LiteLlm
-
+def build_support_agent(config: AppConfig | None = None) -> Agent:
+    """Build the Pydantic AI support agent."""
     config = config or AppConfig.from_env()
     return Agent(
-        name="support_agent",
-        model=LiteLlm(model=config.model_name),
-        description="Answers safe customer support questions from a Postgres-backed document registry.",
-        instruction=SUPPORT_AGENT_INSTRUCTION,
+        config.model_name,
+        instructions=SUPPORT_AGENT_INSTRUCTION,
         tools=[
             list_support_documents,
             find_support_document,
             decide_gmail_label,
         ],
+        defer_model_check=True,
     )
 
 
-root_agent = build_support_agent()
+support_agent = build_support_agent()

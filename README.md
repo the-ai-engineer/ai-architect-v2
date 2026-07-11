@@ -16,7 +16,7 @@ Send an email to a support inbox
 ```
 
 The course starts with small Python examples.
-Then it moves into ADK, RAG, Gmail, Google Cloud, evals, tracing, and deployment.
+Then it moves into Pydantic AI, RAG, Gmail, Google Cloud, evals, tracing, and deployment.
 
 ## Start Here
 
@@ -36,7 +36,7 @@ uv run python examples/01_basic_model_call.py
 uv run python examples/02_structured_outputs.py
 uv run python examples/03_deterministic_workflow.py
 uv run python examples/04_agent_by_hand.py
-uv run --extra adk python examples/05_first_adk_agent.py
+uv run python examples/05_first_framework_agent.py
 uv run python examples/06a_file_rag.py
 uv run python examples/06b_sql_rag.py
 ```
@@ -85,7 +85,8 @@ uv run python -m unittest discover -s tests
 - `uv` for package management and running commands.
 - The ideas translate to other languages.
 - OpenAI `gpt-5.6` as the default model provider.
-- Google ADK 2.x for the agent framework once students understand the agent loop.
+- Pydantic AI for the agent framework once students understand the agent loop.
+- OpenAI by default, with Anthropic shown as a direct provider switch.
 - Gmail and Pub/Sub for asynchronous email ingestion.
 - Cloud Run for deployment.
 - Cloud SQL Postgres for state and support documents.
@@ -98,7 +99,7 @@ uv run python -m unittest discover -s tests
 - `support_agent_app/`: deployable support agent application.
 - `support_agent_app/api.py`: FastAPI HTTP surface for Cloud Run.
 - `support_agent_app/services/`: document registry, Gmail labels, and policy ingestion.
-- `support_agent_app/agents/`: ADK agent definitions.
+- `support_agent_app/agents/`: Pydantic AI agent definitions.
 - `support_agent_app/integrations/`: external system boundaries.
 - `docs/policies/`: editable support policy documents.
 - `docs/resources/`: reusable course prompts and support material.

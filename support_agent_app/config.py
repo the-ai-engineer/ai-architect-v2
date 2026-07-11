@@ -22,7 +22,9 @@ class AppConfig:
     def from_env(cls) -> "AppConfig":
         load_dotenv(APP_ENV_PATH)
         return cls(
-            model_name=os.getenv("AI_ARCHITECT_MODEL", "openai/gpt-5.6"),
+            model_name=_normalize_model_name(
+                os.getenv("AI_ARCHITECT_MODEL", "openai:gpt-5.6")
+            ),
             policy_dir=_resolve_policy_dir(os.getenv("POLICY_DIR")),
             database_url=os.getenv("DATABASE_URL"),
         )
@@ -37,3 +39,10 @@ def _resolve_policy_dir(policy_dir: str | None) -> Path:
         return path
 
     return REPO_ROOT / path
+
+
+def _normalize_model_name(model_name: str) -> str:
+    if model_name.startswith(("openai/", "anthropic/")):
+        provider, model = model_name.split("/", maxsplit=1)
+        return f"{provider}:{model}"
+    return model_name

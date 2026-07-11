@@ -5,6 +5,9 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 
+from pydantic_ai.models import infer_model
+
+from support_agent_app.config import _normalize_model_name
 from support_agent_app.services.document_registry import (
     find_support_document,
     list_support_documents,
@@ -45,13 +48,35 @@ class LessonExamplesTest(unittest.TestCase):
             self.assertNotIn("from collections import Counter", source, msg=str(path))
             self.assertNotIn("cosine_similarity", source, msg=str(path))
 
-    def test_first_adk_agent_defines_real_root_agent(self) -> None:
-        source = Path("examples/05_first_adk_agent.py").read_text(encoding="utf-8")
+    def test_first_framework_agent_uses_pydantic_ai_with_direct_providers(self) -> None:
+        source = Path("examples/05_first_framework_agent.py").read_text(encoding="utf-8")
 
-        self.assertIn("from google.adk.agents.llm_agent import Agent", source)
-        self.assertIn("from google.adk.models.lite_llm import LiteLlm", source)
-        self.assertIn("root_agent = build_root_agent()", source)
+        self.assertIn("from pydantic_ai import Agent", source)
+        self.assertIn('OPENAI_MODEL = "openai:gpt-5.6"', source)
+        self.assertIn('CLAUDE_MODEL = "anthropic:claude-sonnet-4-6"', source)
+        self.assertIn("support_agent = Agent(", source)
         self.assertIn("tools=[list_support_documents, find_support_document]", source)
+        self.assertIn("defer_model_check=True", source)
+        self.assertNotIn("LiteLlm", source)
+        self.assertNotIn("google.adk", source)
+
+    def test_pydantic_ai_resolves_openai_and_anthropic_models(self) -> None:
+        with patch.dict(
+            os.environ,
+            {"OPENAI_API_KEY": "test", "ANTHROPIC_API_KEY": "test"},
+        ):
+            openai_model = infer_model("openai:gpt-5.6")
+            anthropic_model = infer_model("anthropic:claude-sonnet-4-6")
+
+        self.assertEqual(type(openai_model).__name__, "OpenAIResponsesModel")
+        self.assertEqual(type(anthropic_model).__name__, "AnthropicModel")
+
+    def test_legacy_model_name_is_normalized(self) -> None:
+        self.assertEqual(_normalize_model_name("openai/gpt-5.5"), "openai:gpt-5.5")
+        self.assertEqual(
+            _normalize_model_name("anthropic/claude-sonnet-4-6"),
+            "anthropic:claude-sonnet-4-6",
+        )
 
     def test_sql_rag_matches_support_document_schema(self) -> None:
         source = Path("examples/06b_sql_rag.py").read_text(encoding="utf-8")
