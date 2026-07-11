@@ -9,7 +9,7 @@ The goal is to use Codex as an implementation partner while you inspect the arch
 You are helping me deploy this AI customer support agent to Google Cloud.
 
 Goal:
-Deploy the complete support system so a scheduled job discovers a test email, the API stores it durably, Pub/Sub sends it to a worker, and the system replies or marks it for human review.
+Deploy the complete support system so a scheduled job discovers a test email, the API stores its source reference durably, Pub/Sub sends the event identifier to a worker, and the system replies or marks it for human review.
 
 Repository:
 <repo URL>
@@ -17,7 +17,7 @@ Repository:
 Architecture:
 - Cloud Run Job that polls Gmail every five minutes
 - Cloud Run service for the ingestion API
-- Cloud SQL Postgres for tickets, messages, events, outbox records, support documents, and processing state
+- Cloud SQL Postgres for source references, events, outbox records, support documents, and processing state
 - Cloud Run Job that publishes pending outbox records every minute
 - Pub/Sub topic and authenticated push subscription for accepted support events
 - Cloud Run service for scalable support workers
@@ -44,18 +44,21 @@ Tasks:
 5. Enable required APIs.
 6. Create or confirm required service accounts.
 7. Create required secrets.
-8. Create or connect Cloud SQL Postgres.
+8. Create or connect Cloud SQL Postgres and run schema migrations.
 9. Run policy ingestion with `uv run --extra db`.
-10. Deploy the ingestion API and verify `/health`.
-11. Deploy the support worker service.
-12. Create the Pub/Sub topic and authenticated push subscription to the worker.
-13. Deploy and schedule the outbox publisher job.
-14. Configure Gmail API access.
-15. Deploy and schedule the Gmail polling job.
-16. Send or simulate a test email.
-17. Verify the ticket, event, outbox publication, worker result, and Gmail action.
-18. Check logs, queue depth, and unpublished outbox records.
-19. Produce a short deployment report with resource names, URLs, secrets used, and remaining manual steps.
+10. Deploy the ingestion API, grant only required service-to-service callers access, and verify `/health`.
+11. Deploy the support worker service with authenticated Pub/Sub access.
+12. Create the Pub/Sub topic, authenticated push subscription, retry policy, dead-letter topic, and monitored dead-letter subscription.
+13. Deploy and schedule the outbox publisher job with overlap protection.
+14. Configure offline Gmail OAuth using the `gmail.modify` scope and Secret Manager.
+15. Create the `AI Answered` and `Human Needed` labels.
+16. Deploy and schedule the Gmail polling job with a cursor lease and first-run baseline.
+17. Send or simulate a test email.
+18. Verify the source reference, event, outbox publication, worker result, and Gmail action without storing the complete message body.
+19. Configure the daily retention cleanup job.
+20. Test duplicate delivery, retry exhaustion, uncertain send reconciliation, expired leases, and Gmail cursor recovery.
+21. Check logs, operator alerts, dead letters, queue depth, and unpublished outbox records.
+22. Produce a short deployment report with resource names, URLs, secrets used, and remaining manual steps.
 
 Output:
 Work step by step.

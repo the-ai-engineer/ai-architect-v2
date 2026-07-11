@@ -1,6 +1,6 @@
 # Architecture Patterns for AI Systems
 
-**Status:** Draft
+**Status:** Approved
 **Author:** AI Architect course team
 **Date:** 2026-07-11
 
@@ -168,7 +168,7 @@ flowchart LR
     Scheduler["Cloud Scheduler"] --> Poller["Cloud Run Job: Gmail poller"]
     Poller --> Gmail["Gmail API"]
     Poller --> API["Ingestion API"]
-    API --> DB[("Postgres")]
+    API --> DB[("Postgres references and state")]
     DB --> Outbox["Cloud Run Job: outbox publisher"]
     Outbox --> Queue["Pub/Sub"]
     Queue --> Workers["Cloud Run workers"]
@@ -180,26 +180,27 @@ flowchart LR
 |---|---|
 | Gmail poller | Discover new messages every five minutes and submit them to the API |
 | Ingestion API | Validate and durably accept support requests |
-| Postgres | Store tickets, messages, events, processing state, and outcomes |
+| Postgres | Store source references, events, processing state, and outcomes |
 | Outbox publisher | Run every minute and publish accepted events after the database transaction |
 | Pub/Sub | Buffer events and distribute them across workers |
 | Support worker | Run classification, retrieval, drafting, and safety checks |
 | Gmail adapter | Send approved replies or apply `Human Needed` |
 
-The API stores the request and outbox record in one transaction before returning `202 Accepted`.
+The API stores the source reference and outbox record in one transaction before returning `202 Accepted`.
 This prevents work from being lost between the database write and queue publication.
 
 The outbox publisher is a scheduled Cloud Run Job.
 It publishes pending records, marks successful deliveries, and exits.
 
 Pub/Sub messages contain an event identifier rather than the full customer message.
-Workers load the accepted request from Postgres, which remains the source of truth.
+Workers load the source reference from Postgres and fetch the current content through the channel adapter.
+Gmail or the ticketing platform remains the source of truth for customer content.
 
 Gmail is one channel, not the business domain.
 A ticket webhook or local test request can call the same ingestion API and use the same support workflow.
 
-The Gmail poller advances its cursor only after the API durably accepts every message in that range.
-The API enforces a unique source and message idempotency key, so retrying a partial polling run cannot create duplicate tickets.
+The Gmail poller advances its cursor only after the API durably accepts every message reference in that range.
+The API enforces a unique source and message idempotency key, so retrying a partial polling run cannot create duplicate support events.
 
 ```text
 Gmail poller ---------\
@@ -212,8 +213,8 @@ Local test request ----/
 Students should not need cloud infrastructure to develop the AI workflow.
 
 ```text
-Unit test          Call the workflow with a typed support request.
-Local system       POST a fixture to the API and run the handler inline.
+Unit test          Call the workflow with a typed support message.
+Local system       POST a fixture reference and load the local message by ID.
 Cloud integration Use a development Pub/Sub topic.
 End-to-end         Poll a real Gmail inbox and observe the final action.
 ```
@@ -241,7 +242,7 @@ It is not selected because independent retries and scalable workers are importan
 - Polling jobs may overlap, so the Gmail cursor requires a lock or lease and advances only after durable API acceptance.
 - External sends can have uncertain outcomes and must be reconciled before retrying.
 - Unpublished outbox records and queue depth require monitoring.
-- Customer messages need explicit access and retention policies.
+- Source references, decisions, and model traces need explicit access and retention policies.
 
 ## Rollout
 
@@ -252,9 +253,12 @@ It is not selected because independent retries and scalable workers are importan
 5. Add the scheduled Gmail poller and Gmail action adapter.
 6. Add retries, observability, evals, and deployment.
 
-## Open questions
-
-- Which Gmail authentication approach is simplest for the course inbox?
-- How long should customer messages and agent traces be retained?
-
 ## Decision
+
+Approved for the AI Architect course on 2026-07-11.
+
+The course teaches request-response, scheduled batch, and queued event processing as separate execution patterns.
+The support application combines a scheduled Gmail poller with an API-first queued system.
+The API durably stores source references and an outbox record, Pub/Sub distributes event identifiers, and scalable workers fetch current source content before running the AI workflow.
+External platforms remain the source of truth for message and attachment content.
+Deterministic application code, not the model, performs replies and human-review actions.
