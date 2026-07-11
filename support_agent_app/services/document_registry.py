@@ -6,6 +6,32 @@ from pathlib import Path
 from support_agent_app.config import AppConfig
 
 
+STOPWORDS = {
+    "about",
+    "after",
+    "all",
+    "and",
+    "are",
+    "can",
+    "could",
+    "for",
+    "from",
+    "has",
+    "have",
+    "how",
+    "into",
+    "not",
+    "the",
+    "this",
+    "what",
+    "when",
+    "where",
+    "with",
+    "would",
+    "you",
+    "your",
+}
+
 KEYWORDS_BY_CATEGORY = {
     "account": ("account", "login", "password", "access", "guest", "delete", "security"),
     "opening-hours": ("hours", "opening", "support", "available", "weekend", "holiday", "timezone"),
@@ -37,6 +63,44 @@ def load_policy_documents(policy_dir: Path | None = None) -> list[SupportDocumen
         documents.append(parse_policy_document(path))
 
     return documents
+
+
+def load_support_documents(database_url: str | None = None) -> list[SupportDocument]:
+    config = AppConfig.from_env()
+    database_url = database_url if database_url is not None else config.database_url
+
+    if database_url:
+        return load_support_documents_from_postgres(database_url)
+
+    return load_policy_documents(config.policy_dir)
+
+
+def load_support_documents_from_postgres(database_url: str) -> list[SupportDocument]:
+    import psycopg
+
+    with psycopg.connect(database_url) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                select id, title, category, summary, body, keywords
+                from support_documents
+                where is_active
+                order by id;
+                """
+            )
+            rows = cur.fetchall()
+
+    return [
+        SupportDocument(
+            id=row[0],
+            title=row[1],
+            category=row[2],
+            summary=row[3],
+            body=row[4],
+            keywords=tuple(row[5]),
+        )
+        for row in rows
+    ]
 
 
 def parse_policy_document(path: Path) -> SupportDocument:
@@ -84,26 +148,25 @@ def list_support_documents() -> list[dict[str, str]]:
             "summary": doc.summary,
             "keywords": ", ".join(doc.keywords),
         }
-        for doc in load_policy_documents()
+        for doc in load_support_documents()
     ]
 
 
 def find_support_document(query: str) -> dict[str, object]:
     """Find the most relevant support document from the registry."""
-    query_terms = {
-        term.strip("?.!,").lower()
-        for term in query.split()
-        if len(term.strip("?.!,")) > 2
-    }
+    query_terms = _extract_search_terms(query)
+    documents = load_support_documents()
+
+    if not documents:
+        return {
+            "found": False,
+            "reason": "No support documents are available.",
+            "document": None,
+        }
 
     scored = []
-    for doc in load_policy_documents():
-        searchable = {
-            doc.category,
-            *doc.keywords,
-            *doc.title.lower().split(),
-            *doc.summary.lower().split(),
-        }
+    for doc in documents:
+        searchable = _document_search_terms(doc)
         score = len(query_terms.intersection(searchable))
         scored.append((score, doc))
 
@@ -127,3 +190,26 @@ def find_support_document(query: str) -> dict[str, object]:
         },
     }
 
+
+def _extract_search_terms(text: str) -> set[str]:
+    return {
+        term.strip("?.!,;:()[]{}\"'").lower()
+        for term in text.split()
+        if _is_search_term(term.strip("?.!,;:()[]{}\"'").lower())
+    }
+
+
+def _is_search_term(term: str) -> bool:
+    return len(term) > 2 and term not in STOPWORDS
+
+
+def _document_search_terms(document: SupportDocument) -> set[str]:
+    searchable_text = " ".join(
+        (
+            document.category,
+            document.title,
+            document.summary,
+            " ".join(document.keywords),
+        )
+    )
+    return _extract_search_terms(searchable_text)

@@ -14,16 +14,17 @@ The loop is:
 
 import os
 from enum import Enum
+from pathlib import Path
 
 from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel
 
-load_dotenv()
+load_dotenv(Path(__file__).with_name(".env"))
 
 
 if not os.getenv("OPENAI_API_KEY"):
-    print("Set OPENAI_API_KEY to run this example.")
+    print("Set OPENAI_API_KEY in examples/.env to run this example.")
     raise SystemExit(0)
 
 
@@ -106,7 +107,7 @@ POLICY_DOCUMENTS = [
 
 
 class Agent:
-    def __init__(self, model: str = "gpt-5.5", max_iterations: int = 6) -> None:
+    def __init__(self, model: str = "gpt-5.6", max_iterations: int = 6) -> None:
         self.model = model
         self.max_iterations = max_iterations
 

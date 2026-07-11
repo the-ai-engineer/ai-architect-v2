@@ -16,6 +16,7 @@ class SupportEmailResponse(BaseModel):
     label: str
     reason: str
     document_id: str | None
+    draft_reply: str | None
 
 
 app = FastAPI(title="AI Architect Support Agent")
@@ -33,5 +34,5 @@ def support_email(request: SupportEmailRequest) -> SupportEmailResponse:
         label=result.label,
         reason=result.reason,
         document_id=result.document_id,
+        draft_reply=result.draft_reply,
     )
-

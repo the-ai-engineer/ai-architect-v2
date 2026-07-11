@@ -1,4 +1,4 @@
-create table support_documents (
+create table if not exists support_documents (
     id text primary key,
     title text not null,
     category text not null,
@@ -10,11 +10,11 @@ create table support_documents (
     updated_at timestamptz not null default now()
 );
 
-create index support_documents_category_idx
+create index if not exists support_documents_category_idx
     on support_documents (category)
     where is_active;
 
-create index support_documents_keywords_idx
+create index if not exists support_documents_keywords_idx
     on support_documents
     using gin (keywords)
     where is_active;

@@ -143,6 +143,7 @@ Students learn:
 - why agents are simpler than they look
 
 Lesson 05 introduces ADK.
+Run the lesson 05 example with `uv run --extra adk python examples/05_first_adk_agent.py`.
 
 From that point onward, ADK is the course runtime.
 We do not keep rebuilding the same system in different frameworks.
@@ -213,7 +214,7 @@ Each example should be small, runnable, and easy to explain in a recording.
 
 Use OpenAI for the early model calls, structured outputs, and RAG examples.
 It keeps the teaching path simple.
-The current default OpenAI model in the repo is `gpt-5.5`.
+The current default OpenAI model in the repo is `gpt-5.6`.
 
 Lesson 05 introduces ADK and the idea that model providers are a configuration choice.
 The app should be able to swap providers through its model setting.

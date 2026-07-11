@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+!examples/.env.sample
+!support_agent_app/.env.sample
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -14,4 +16,3 @@ build/
 *.egg-info/
 .coverage
 htmlcov/
-

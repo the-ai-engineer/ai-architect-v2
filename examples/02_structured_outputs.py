@@ -7,16 +7,17 @@ Structured outputs turn model responses into typed data your application can tru
 
 import os
 from enum import Enum
+from pathlib import Path
 
 from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel
 
-load_dotenv()
+load_dotenv(Path(__file__).with_name(".env"))
 
 
 if not os.getenv("OPENAI_API_KEY"):
-    print("Set OPENAI_API_KEY to run this example.")
+    print("Set OPENAI_API_KEY in examples/.env to run this example.")
     raise SystemExit(0)
 
 
@@ -55,7 +56,7 @@ class Classification(BaseModel):
 
 def classify(email: Email) -> Classification:
     response = client.responses.parse(
-        model="gpt-5.5",
+        model="gpt-5.6",
         instructions="Classify the customer support email.",
         input=f"Subject: {email.subject}\n\n{email.body}",
         text_format=Classification,
@@ -86,7 +87,7 @@ class CustomerRequest(BaseModel):
 
 def extract_request(email: Email) -> CustomerRequest:
     response = client.responses.parse(
-        model="gpt-5.5",
+        model="gpt-5.6",
         instructions="Extract the customer request from the email.",
         input=f"Subject: {email.subject}\n\n{email.body}",
         text_format=CustomerRequest,

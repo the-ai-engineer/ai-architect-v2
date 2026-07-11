@@ -7,6 +7,10 @@ The finished application is an AI customer support agent.
 A customer sends an email to a support inbox.
 The system reads the message, creates a ticket, looks up the right support document, drafts an answer, and either replies by email or escalates to a human.
 
+This spec describes the target application the course builds toward.
+The current runnable repo covers the early local lessons and the support document registry first.
+Gmail, Pub/Sub, guardrails, evals, observability, and deployment code are added later in the course path.
+
 The operational interface stays simple.
 If the AI answers the message, the email gets an `AI Answered` Gmail label.
 If the AI cannot answer safely, the email gets a `Human Needed` Gmail label and a person handles it.
@@ -132,7 +136,7 @@ The reusable prompt lives in `docs/resources/deploy-with-codex-prompt.md`.
 
 Use OpenAI as the default model provider.
 It is the cleanest teaching path for model calls, structured outputs, embeddings, answer generation, and evals.
-The default OpenAI model is `gpt-5.5`.
+The default OpenAI model is `gpt-5.6`.
 
 Use Google Cloud as the default deployment target.
 It is the best fit for Gmail, Pub/Sub, Cloud Run, Cloud SQL, Cloud Trace, Cloud Logging, and Cloud Monitoring.

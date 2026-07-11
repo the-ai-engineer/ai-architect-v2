@@ -13,7 +13,7 @@ from pathlib import Path
 from pydantic import BaseModel
 
 
-POLICY_DIR = Path("docs/policies")
+POLICY_DIR = Path(__file__).resolve().parents[1] / "docs" / "policies"
 
 
 class SupportDocument(BaseModel):

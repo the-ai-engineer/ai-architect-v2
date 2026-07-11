@@ -26,7 +26,7 @@ Rules:
 
 def build_support_agent(config: AppConfig | None = None) -> Any:
     """Build the ADK support agent."""
-    from google.adk import Agent
+    from google.adk.agents.llm_agent import Agent
     from google.adk.models.lite_llm import LiteLlm
 
     config = config or AppConfig.from_env()

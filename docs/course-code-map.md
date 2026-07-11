@@ -12,6 +12,11 @@ That app uses ADK, RAG, Gmail, Google Cloud, evals, tracing, and deployment.
 The course ideas are language agnostic.
 The examples use Python because it keeps the teaching code small and readable.
 
+## Current Repo Coverage
+
+Lessons 01 to 07 are runnable in this repo today.
+Lessons 08 to 12 document the target production shape and will add Gmail, Pub/Sub, guardrails, evals, observability, and deployment code as the course progresses.
+
 ## Lesson Plan
 
 | Lesson | Code shape | Outcome |
