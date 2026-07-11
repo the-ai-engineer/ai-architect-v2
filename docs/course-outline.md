@@ -33,13 +33,14 @@ The finished system is an asynchronous customer support agent.
 ```text
 Customer sends email
 -> Gmail receives it
--> Pub/Sub notifies our app
--> Cloud Run processes the ticket
+-> a scheduled Cloud Run Job discovers it
+-> the ingestion API stores it in Postgres
+-> Pub/Sub sends it to a Cloud Run worker
 -> Pydantic AI agent looks up the right support document from Postgres
 -> OpenAI drafts a grounded answer
 -> guardrails approve, block, or escalate
--> Gmail sends the reply and labels it AI Answered
--> or Gmail labels it Human Needed for a person to handle
+-> application code sends and labels the reply as AI Answered
+-> or applies Human Needed for a person to handle
 ```
 
 Customer support is a strong teaching domain because it has repeated questions, clear policies, business context, human escalation, and measurable outcomes.
@@ -103,15 +104,17 @@ log what happened
 
 This is one of the most important production patterns in the course.
 
-There are two ways to build the email trigger:
+There are two ways to discover new email work:
 
 - polling: check Gmail every few minutes and process new messages
 - event-based: let Gmail notify the app through Pub/Sub when the mailbox changes
 
-Polling is simpler to understand and can be good for local development or early prototypes.
-Event-based processing is the better final production shape because the system reacts to new work, avoids constant checking, and fits naturally with Cloud Run services.
+Polling and event-based delivery are input mechanisms, not complete system architectures.
+The course uses scheduled polling because email does not need an instant response.
+Each discovered message is then submitted to the asynchronous support workflow so it can be processed and retried independently.
 
-The course can show polling as the stepping stone, then move to event-based processing for the deployed app.
+The course first submits a canonical support request directly, then connects a scheduled Gmail poller as the real event producer.
+See [Architecture Patterns for AI Systems](ai-system-architecture-patterns/design.md) for the complete design.
 
 ## Lessons
 
@@ -155,8 +158,8 @@ Lessons 06 onward build the real application:
 - Postgres document lookup as the default production RAG tool
 - vector search as an alternative retrieval tool
 - hybrid search as an alternative for messier knowledge bases
-- human escalation as a Pydantic AI tool
-- Gmail reply as a Pydantic AI tool
+- a typed Pydantic AI reply or escalation decision
+- deterministic Gmail reply and label actions
 - evals
 - tracing
 - deployment
@@ -166,14 +169,17 @@ The architecture progression should be explicit:
 ```text
 local examples
 -> local fake email workflow
--> Gmail polling for a simple working demo
--> Gmail Pub/Sub events for the production-shaped demo
--> Cloud Run service for the main app
+-> direct support events through the API
+-> Postgres acceptance and an outbox
+-> Pub/Sub and scalable workers
+-> scheduled Gmail polling as a real input channel
+-> Cloud Run Jobs for polling and outbox publishing, plus API and worker services
 -> Cloud Run job or local CLI for one-off work like policy ingestion
 ```
 
-The main deployed app is a Cloud Run service because it receives HTTP requests from Pub/Sub and exposes health or admin endpoints.
-Batch jobs are useful for ingestion, maintenance, and scheduled polling, but they are not the main support agent surface.
+The deployed app uses one codebase in four roles: scheduled poller, ingestion API, scheduled outbox publisher, and support worker.
+Pub/Sub invokes authenticated private workers using OIDC, Cloud Run probes handle service health, and any admin surface requires separate authentication.
+Cloud Run jobs are also useful for policy ingestion and maintenance work.
 
 The deployment lesson should also teach how to use Codex as a deployment partner.
 Students should understand the architecture first, then use the prompt in `docs/resources/deploy-with-codex-prompt.md` to help configure Google Cloud step by step.
