@@ -66,15 +66,16 @@ The demo should end like this:
 
 ```text
 1. Send an email from a normal email account to the course support inbox.
-2. Gmail sends a mailbox-change event through Pub/Sub.
-3. The Gmail adapter on Cloud Run fetches the new email and publishes a canonical support event.
-4. Pub/Sub delivers the support event to the worker on Cloud Run.
-5. The worker stores the event and email as a ticket.
-6. The Pydantic AI support agent looks up the right support document from Postgres.
-7. OpenAI drafts a grounded answer.
-8. Guardrails decide whether the answer is safe to send.
-9. Gmail sends the reply and labels the thread `AI Answered`, or the app labels it `Human Needed`.
-10. The run appears in logs, traces, eval reports, and cost records.
+2. A scheduled Cloud Run Job polls Gmail for new customer messages.
+3. The poller submits each message to the ingestion API.
+4. The API stores the ticket, message, event, and outbox record in Postgres.
+5. The outbox publisher sends the event to Pub/Sub.
+6. Pub/Sub delivers the event to a support worker on Cloud Run.
+7. The Pydantic AI support agent looks up the right support document from Postgres.
+8. OpenAI drafts a grounded answer.
+9. Guardrails decide whether the answer is safe to send.
+10. Gmail sends the reply and labels the thread `AI Answered`, or the app labels it `Human Needed`.
+11. The run appears in logs, traces, eval reports, and cost records.
 ```
 
 ## Scope
@@ -98,11 +99,11 @@ Those are extension examples because they add authorization and security complex
 
 ```text
 Gmail support inbox
-  -> Gmail notifications topic
-  -> Gmail adapter on Cloud Run
-  -> support events topic
+  -> scheduled Gmail poller on Cloud Run
+  -> ingestion API
+  -> Postgres ticket, message, event, and outbox
+  -> Pub/Sub
   -> support worker on Cloud Run
-  -> ticket store
   -> Pydantic AI support agent
       -> classify question
       -> inspect support document index
@@ -120,18 +121,19 @@ The course should teach the async progression in stages:
 ```text
 local fake email workflow
 -> direct support events through the API
--> Pub/Sub and an asynchronous worker
--> Gmail Pub/Sub notifications
--> Cloud Run services for ingress and worker roles
+-> Postgres acceptance and an outbox
+-> Pub/Sub and scalable workers
+-> scheduled Gmail polling
+-> Cloud Run Jobs for polling and outbox publishing, plus API and worker services
 ```
 
-Polling is an alternative adapter for sources without reliable notifications and a useful reconciliation mechanism.
-Event-based processing is the final production shape.
-Gmail publishes mailbox changes to Pub/Sub, a Gmail adapter fetches the changed email state, and the adapter publishes the same support event used by direct API and ticket-system inputs.
+Polling is the chosen Gmail adapter because support email does not require an instant response.
+The poller submits the same support request used by direct API and ticket-system inputs.
+The downstream system remains event driven: the API accepts durable work and Pub/Sub distributes it to scalable workers.
 
-The detailed architecture is documented in `docs/event-driven-ai-systems.md`.
+The detailed architecture is documented in `docs/ai-system-architecture-patterns/design.md`.
 
-The main deployed app should use one codebase deployed as ingress and worker Cloud Run services.
+The main deployed app should use one codebase deployed as polling and outbox jobs, an ingestion API, and a worker service.
 Cloud Run jobs are useful for policy ingestion, maintenance tasks, or scheduled polling, but they are not the main API surface for the support agent.
 
 The course should include a deployment prompt for Codex.
@@ -162,14 +164,14 @@ Provider-native tools and model-specific settings may still require changes, so 
 |---|---|
 | `TicketStore` | Store incoming support tickets and their status |
 | `DocumentRegistry` | Store support documents, categories, summaries, and keywords in Postgres |
-| `SupportAgent` | Decide which tools to call and when to escalate |
+| `SupportAgent` | Use trusted documents and return a typed reply or escalation decision |
 | `list_support_documents` | Show the agent the document index |
 | `find_support_document` | Load the best support document for the question |
 | `draft_support_reply` | Draft an answer grounded in retrieved context |
 | `check_reply` | Decide whether the answer is safe enough to send |
-| `send_email_reply` | Send a Gmail reply when approved |
-| `apply_gmail_label` | Label the thread `AI Answered` or `Human Needed` |
-| `create_human_review` | Escalate uncertain or risky tickets |
+| `SupportProcessor` | Persist the agent decision and invoke the correct channel action |
+| `GmailAdapter` | Deterministically send replies and apply `AI Answered` or `Human Needed` |
+| `HumanReviewStore` | Record uncertain or risky tickets for human review |
 | `RunLogger` | Record events, traces, model calls, and tool calls |
 
 ## Application Layout
@@ -243,14 +245,17 @@ Start with these tables in the production app:
 ```text
 tickets
 ticket_messages
+channel_cursors
 support_documents
 draft_replies
 human_reviews
 gmail_labels
+outbound_actions
 agent_runs
 tool_calls
 model_calls
 events
+outbox_events
 eval_cases
 eval_runs
 eval_results

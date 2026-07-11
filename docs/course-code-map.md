@@ -72,21 +72,22 @@ The course should show the progression from simple to production-shaped:
 ```text
 local fake email workflow
 -> direct support events through the API
--> Pub/Sub and an asynchronous worker
--> Gmail Pub/Sub notifications
--> Cloud Run services for ingress and worker roles
+-> Postgres acceptance and an outbox
+-> Pub/Sub and scalable workers
+-> scheduled Gmail polling
+-> Cloud Run Jobs for polling and outbox publishing, plus API and worker services
 ```
 
-Polling is an alternative input adapter when a source does not provide reliable notifications.
-It can also reconcile work missed during an outage.
+Polling is the chosen Gmail input adapter because support email does not need an instant response.
+The poller runs as a finite scheduled job and submits each discovered message to the ingestion API.
 
 Event-based processing is the final architecture.
-Gmail notifies Pub/Sub, a Gmail adapter fetches the changed mailbox state, and the adapter publishes a canonical support event for the worker.
-This avoids constant polling and matches how production event systems are usually built.
+The API stores each accepted request and an outbox record before Pub/Sub distributes the event to scalable workers.
+This keeps discovery separate from customer-facing AI processing.
 
-See `docs/event-driven-ai-systems.md` for the full explanation and diagrams.
+See `docs/ai-system-architecture-patterns/design.md` for the full explanation and diagrams.
 
-The main support app should use one codebase deployed as ingress and worker Cloud Run services.
+The main support app should use one codebase deployed as polling and outbox jobs, an ingestion API, and a worker service.
 Use a Cloud Run job or local CLI for one-off work such as policy ingestion.
 
 The deployment resource is `docs/resources/deploy-with-codex-prompt.md`.
