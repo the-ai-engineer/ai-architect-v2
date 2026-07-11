@@ -67,13 +67,14 @@ The demo should end like this:
 ```text
 1. Send an email from a normal email account to the course support inbox.
 2. Gmail sends a mailbox-change event through Pub/Sub.
-3. Cloud Run receives the event.
-4. The app fetches the new email and stores it as a ticket.
-5. The Pydantic AI support agent looks up the right support document from Postgres.
-6. OpenAI drafts a grounded answer.
-7. Guardrails decide whether the answer is safe to send.
-8. Gmail sends the reply and labels the thread `AI Answered`, or the app labels it `Human Needed`.
-9. The run appears in logs, traces, eval reports, and cost records.
+3. The Gmail adapter on Cloud Run fetches the new email and publishes a canonical support event.
+4. Pub/Sub delivers the support event to the worker on Cloud Run.
+5. The worker stores the event and email as a ticket.
+6. The Pydantic AI support agent looks up the right support document from Postgres.
+7. OpenAI drafts a grounded answer.
+8. Guardrails decide whether the answer is safe to send.
+9. Gmail sends the reply and labels the thread `AI Answered`, or the app labels it `Human Needed`.
+10. The run appears in logs, traces, eval reports, and cost records.
 ```
 
 ## Scope
@@ -97,8 +98,10 @@ Those are extension examples because they add authorization and security complex
 
 ```text
 Gmail support inbox
-  -> Pub/Sub
-  -> Cloud Run webhook
+  -> Gmail notifications topic
+  -> Gmail adapter on Cloud Run
+  -> support events topic
+  -> support worker on Cloud Run
   -> ticket store
   -> Pydantic AI support agent
       -> classify question
@@ -116,16 +119,19 @@ The course should teach the async progression in stages:
 
 ```text
 local fake email workflow
--> Gmail polling
--> Gmail Pub/Sub events
--> Cloud Run service
+-> direct support events through the API
+-> Pub/Sub and an asynchronous worker
+-> Gmail Pub/Sub notifications
+-> Cloud Run services for ingress and worker roles
 ```
 
-Polling is useful for local development and first demos.
+Polling is an alternative adapter for sources without reliable notifications and a useful reconciliation mechanism.
 Event-based processing is the final production shape.
-Gmail publishes mailbox changes to Pub/Sub, Pub/Sub calls the Cloud Run service, and the app fetches the changed email state from Gmail.
+Gmail publishes mailbox changes to Pub/Sub, a Gmail adapter fetches the changed email state, and the adapter publishes the same support event used by direct API and ticket-system inputs.
 
-The main deployed app should be a Cloud Run service.
+The detailed architecture is documented in `docs/event-driven-ai-systems.md`.
+
+The main deployed app should use one codebase deployed as ingress and worker Cloud Run services.
 Cloud Run jobs are useful for policy ingestion, maintenance tasks, or scheduled polling, but they are not the main API surface for the support agent.
 
 The course should include a deployment prompt for Codex.

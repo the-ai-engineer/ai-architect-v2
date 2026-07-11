@@ -23,6 +23,7 @@ Then it moves into Pydantic AI, RAG, Gmail, Google Cloud, evals, tracing, and de
 Read the finished application spec:
 
 - [docs/course-outline.md](docs/course-outline.md)
+- [docs/event-driven-ai-systems.md](docs/event-driven-ai-systems.md)
 - [docs/final-agent-spec.md](docs/final-agent-spec.md)
 - [docs/course-code-map.md](docs/course-code-map.md)
 - [docs/resources/deploy-with-codex-prompt.md](docs/resources/deploy-with-codex-prompt.md)

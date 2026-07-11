@@ -103,15 +103,17 @@ log what happened
 
 This is one of the most important production patterns in the course.
 
-There are two ways to build the email trigger:
+There are two ways to discover new email work:
 
 - polling: check Gmail every few minutes and process new messages
 - event-based: let Gmail notify the app through Pub/Sub when the mailbox changes
 
-Polling is simpler to understand and can be good for local development or early prototypes.
-Event-based processing is the better final production shape because the system reacts to new work, avoids constant checking, and fits naturally with Cloud Run services.
+Polling and event-based delivery are input mechanisms for the same asynchronous support workflow.
+Polling is appropriate when a source has no reliable notification mechanism and is useful as a reconciliation process.
+Event-based processing is the primary production shape because the system reacts to new work, avoids constant checking, and fits naturally with Cloud Run services.
 
-The course can show polling as the stepping stone, then move to event-based processing for the deployed app.
+The course first publishes a canonical support event directly, then connects Gmail as a real event source.
+See [How the Support System Works](event-driven-ai-systems.md) for the complete architecture.
 
 ## Lessons
 
@@ -166,13 +168,15 @@ The architecture progression should be explicit:
 ```text
 local examples
 -> local fake email workflow
--> Gmail polling for a simple working demo
--> Gmail Pub/Sub events for the production-shaped demo
--> Cloud Run service for the main app
+-> direct support events through the API
+-> Pub/Sub and an asynchronous worker
+-> Gmail Pub/Sub notifications as a real input channel
+-> Cloud Run services for the ingress and worker roles
 -> Cloud Run job or local CLI for one-off work like policy ingestion
 ```
 
-The main deployed app is a Cloud Run service because it receives HTTP requests from Pub/Sub and exposes health or admin endpoints.
+The deployed app uses one codebase with two Cloud Run service roles: ingress and worker.
+Pub/Sub invokes authenticated private services using OIDC, Cloud Run probes handle service health, and any admin surface requires separate authentication.
 Batch jobs are useful for ingestion, maintenance, and scheduled polling, but they are not the main support agent surface.
 
 The deployment lesson should also teach how to use Codex as a deployment partner.
