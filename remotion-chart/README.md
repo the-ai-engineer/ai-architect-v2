@@ -1,6 +1,8 @@
-# Animated five-bar chart
+# Event-driven architecture diagram
 
-A 1920 by 1080 Remotion composition with five staggered, animated bars.
+A minimal 1920 by 1080 Remotion composition showing this flow:
+
+`Event → API → Database + Queue → Worker`
 
 ## Commands
 
@@ -19,7 +21,7 @@ npm run dev
 Render the composition:
 
 ```console
-npx remotion render FiveBarChart out/five-bar-chart.mp4
+npx remotion render EventDrivenSystem out/event-driven-system.mp4
 ```
 
 Run lint and type checks:
@@ -28,5 +30,5 @@ Run lint and type checks:
 npm run lint
 ```
 
-The title and subtitle are editable through the composition's default props in
+The title is editable through the composition's default props in
 `src/Composition.tsx`.

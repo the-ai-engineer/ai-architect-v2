@@ -1,7 +1,7 @@
 {
   "name": "remotion-chart",
   "version": "1.0.0",
-  "description": "Animated five-bar chart built with Remotion",
+  "description": "Minimal event-driven architecture diagram built with Remotion",
   "repository": {},
   "license": "UNLICENSED",
   "private": true,

@@ -1,6 +1,6 @@
 import "./index.css";
-import { FiveBarChartComposition } from "./Composition";
+import { EventDrivenSystemComposition } from "./Composition";
 
 export const RemotionRoot: React.FC = () => {
-  return <FiveBarChartComposition />;
+  return <EventDrivenSystemComposition />;
 };
