@@ -34,3 +34,8 @@ line-length = 100
 
 [tool.setuptools.packages.find]
 include = ["support_agent_app", "support_agent_app.*"]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.3.0",
+]
