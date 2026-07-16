@@ -97,7 +97,7 @@ uv run python -m unittest discover -s tests
 ## Repo Structure
 
 - `examples/`: small runnable standalone lesson examples.
-- `support_agent_app/`: deployable support agent application.
+- [`support_agent_app/`](support_agent_app/README.md): integrated application for the later lessons.
 - `support_agent_app/api.py`: FastAPI HTTP surface for Cloud Run.
 - `support_agent_app/services/`: document registry, Gmail labels, and policy ingestion.
 - `support_agent_app/agents/`: Pydantic AI agent definitions.
