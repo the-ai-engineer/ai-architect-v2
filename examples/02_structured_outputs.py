@@ -6,8 +6,8 @@ Structured outputs turn model responses into typed data your application can tru
 """
 
 import os
-from enum import Enum
 from pathlib import Path
+from typing import Literal
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -28,79 +28,61 @@ client = OpenAI()
 # =============================================================================
 
 
-class Email(BaseModel):
-    sender: str
-    subject: str
-    body: str
-
-
-class Category(str, Enum):
-    REFUND = "refund"
-    SHIPPING = "shipping"
-    ACCOUNT = "account"
-    PRIVACY = "privacy"
-    OTHER = "other"
-
-
-class Action(str, Enum):
-    ANSWER = "answer"
-    HUMAN_NEEDED = "human_needed"
-
-
 class Classification(BaseModel):
-    category: Category
-    action: Action
-    confidence: float
-    reason: str
+    category: Literal["refund", "shipping", "account", "other"]
+    urgent: bool
 
 
-def classify(email: Email) -> Classification:
+def classify(email: str) -> Classification:
     response = client.responses.parse(
         model="gpt-5.6",
         instructions="Classify the customer support email.",
-        input=f"Subject: {email.subject}\n\n{email.body}",
+        input=email,
         text_format=Classification,
     )
     return response.output_parsed
 
 
-email = Email(
-    sender="customer@example.com",
-    subject="Return question",
-    body="Hi, can I return a backpack if I opened the box but have not used it?",
-)
+emails = [
+    "Can I return a backpack if I opened the box but have not used it?",
+    "My order was due yesterday. When will it arrive?",
+    "I cannot sign in and need access before my trip tomorrow.",
+]
 
-classification = classify(email)
-
-print(classification)
+for email in emails:
+    print(f"\nEmail: {email}")
+    print(f"Classification: {classify(email)}")
 
 # =============================================================================
-# Extract A Customer Request
+# Nested Structured Output
 # =============================================================================
 
 
-class CustomerRequest(BaseModel):
+class Customer(BaseModel):
+    name: str
+    email: str
+
+
+class SupportRequest(BaseModel):
+    customer: Customer
     summary: str
-    customer_question: str
-    needs_private_data: bool
+    order_number: str
 
 
-def extract_request(email: Email) -> CustomerRequest:
+def extract_request(email: str) -> SupportRequest:
     response = client.responses.parse(
         model="gpt-5.6",
-        instructions="Extract the customer request from the email.",
-        input=f"Subject: {email.subject}\n\n{email.body}",
-        text_format=CustomerRequest,
+        instructions="Extract the customer and support request from the email.",
+        input=email,
+        text_format=SupportRequest,
     )
     return response.output_parsed
 
 
-email = Email(
-    sender="customer@example.com",
-    subject="Shipping update",
-    body="Can you tell me whether order NS-1029 has shipped yet?",
+email = (
+    "Hi, I am Maya Chen (maya@example.com). "
+    "Can you tell me whether order NS-1029 has shipped yet?"
 )
 
 request = extract_request(email)
-print()
-print(request)
+print(f"\nNested request: {request}")
